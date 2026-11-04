@@ -447,7 +447,7 @@ export default function CheckPage({
                         // a board with the switches answers the columns read
                         // with travel values, a board without does not.
                         await trialOwner({ magnetic: true });
-                        let real = false;
+                        let real: boolean;
                         try {
                           real = switchesLookReal(await getSwitches());
                         } catch {
