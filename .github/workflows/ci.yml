@@ -5,8 +5,14 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: client-checks-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   checks:
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -40,10 +46,13 @@ jobs:
           cd app
           npx vite build --sourcemap
           python3 ../tools/notices.py --check
-      - name: Security audits
+      - name: Install Rust audit tool
         if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          cargo install cargo-audit --locked || true
-          cd app/src-tauri && cargo audit || echo "::warning::cargo audit found advisories"
-          cd ../.. && cd app && npm audit --audit-level=moderate || echo "::warning::npm audit found advisories"
+        run: cargo install cargo-audit --version 0.22.2 --locked
+      - name: Rust vulnerability audit
+        if: runner.os == 'Linux'
+        run: cargo audit --file app/src-tauri/Cargo.lock
+      - name: npm vulnerability audit
+        if: runner.os == 'Linux'
+        working-directory: app
+        run: npm audit --audit-level=low

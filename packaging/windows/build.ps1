@@ -32,14 +32,14 @@ try {
     if (-not $Bundles) { throw 'No requested installer was produced.' }
     $Bundles | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $Artifacts -Force }
   }
-  $Portable = Join-Path $Artifacts 'Akko-Studio-portable'
+  $Portable = Join-Path $Artifacts 'Open-Akko-portable'
   New-Item -ItemType Directory -Force -Path $Portable | Out-Null
-  Copy-Item -LiteralPath (Join-Path $Release 'sharkfin.exe') -Destination (Join-Path $Portable 'Akko Studio.exe') -Force
+  Copy-Item -LiteralPath (Join-Path $Release 'sharkfin.exe') -Destination (Join-Path $Portable 'Open Akko.exe') -Force
   foreach ($File in @('LICENSE', 'THIRD-PARTY-NOTICES.md')) {
     Copy-Item -LiteralPath (Join-Path $Root $File) -Destination $Portable -Force
   }
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'PORTABLE.md') -Destination (Join-Path $Portable 'README.md') -Force
-  Compress-Archive -Path (Join-Path $Portable '*') -DestinationPath (Join-Path $Artifacts 'Akko-Studio-windows-x64-portable.zip') -Force
+  Compress-Archive -Path (Join-Path $Portable '*') -DestinationPath (Join-Path $Artifacts 'Open-Akko-windows-x64-portable.zip') -Force
   Get-ChildItem -LiteralPath $Artifacts -File | Where-Object { $_.Name -ne 'SHA256SUMS.txt' } | ForEach-Object {
     (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower() + '  ' + $_.Name
   } | Set-Content -LiteralPath (Join-Path $Artifacts 'SHA256SUMS.txt') -Encoding ascii

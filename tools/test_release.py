@@ -24,6 +24,21 @@ class ReleaseTests(unittest.TestCase):
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, destination)
 
+        config = release.read_json(release.ROOT / "app/src-tauri/tauri.conf.json")
+        inputs = list(config["bundle"].get("resources", {}))
+        for bundle in config["bundle"].get("linux", {}).values():
+            inputs.extend(bundle.get("files", {}).values())
+        for source in inputs:
+            original = (release.ROOT / "app/src-tauri" / source).resolve()
+            destination = (self.root / "app/src-tauri" / source).resolve()
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(original, destination)
+
+    def test_missing_packaging_input_is_rejected_before_build(self):
+        (self.root / "packaging/com.kayzidev.open-akko.metainfo.xml").unlink()
+        with self.assertRaisesRegex(ValueError, "Missing packaging input"):
+            release.validate(self.root)
+
     def artifacts(self):
         folder = self.root / "artifacts/release"
         folder.mkdir(parents=True)
@@ -54,6 +69,17 @@ class ReleaseTests(unittest.TestCase):
         value["plugins"]["updater"]["endpoints"] = ["https://example.org/latest.json"]
         release.write_json(config, value)
         with self.assertRaises(ValueError): release.validate(self.root)
+
+    def test_collect_does_not_package_a_cached_older_version(self):
+        folder = self.root / "app/src-tauri/target/release/bundle/appimage"
+        folder.mkdir(parents=True)
+        for release_version in ["0.12.3", "0.12.4"]:
+            artifact = folder / f"Open Akko_{release_version}_amd64.AppImage"
+            artifact.write_bytes(release_version.encode())
+            Path(str(artifact) + ".sig").write_text(base64.b64encode(b"untrusted comment: fixture\n").decode())
+        release.collect("0.12.4", "linux", self.root)
+        copied = self.root / "artifacts/release" / release.artifact_name("0.12.4", "linux")
+        self.assertEqual(copied.read_bytes(), b"0.12.4")
 
     def test_missing_platform_prevents_publication(self):
         folder = self.artifacts()

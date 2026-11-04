@@ -55,6 +55,14 @@ def validate(root=ROOT):
         raise ValueError("Missing or inconsistent signing public key")
     if any(updater.get(k, False) for k in ["dangerousInsecureTransportProtocol", "dangerousAcceptInvalidCerts", "dangerousAcceptInvalidHostnames", "allowDowngrades"]):
         raise ValueError("Updates must use TLS, valid certificates and newer versions")
+    # Check packaging inputs before spending time on a signed platform build.
+    # Resource mappings use source keys; Linux bundle mappings use source values.
+    inputs = list(config.get("bundle", {}).get("resources", {}))
+    for bundle in config.get("bundle", {}).get("linux", {}).values():
+        inputs.extend(bundle.get("files", {}).values())
+    for source in inputs:
+        if not (root / "app/src-tauri" / source).is_file():
+            raise ValueError(f"Missing packaging input: {source}")
     return config["version"]
 
 
@@ -94,7 +102,7 @@ def prepare(release_version, platform, root=ROOT):
 def artifact_name(release_version, platform):
     extension = PLATFORMS[platform][1]
     suffix = "windows-x64-setup" if platform == "windows" else "linux-x64"
-    return f"Akko-Studio_{version(release_version)}_{suffix}.{extension}"
+    return f"Open-Akko_{version(release_version)}_{suffix}.{extension}"
 
 
 def signature(path):
@@ -107,7 +115,7 @@ def signature(path):
 def collect(release_version, platform, root=ROOT):
     extension, bundle = PLATFORMS[platform][1:]
     folder = root / "app/src-tauri/target/release/bundle" / bundle
-    files = sorted(folder.glob(f"*.{extension}"))
+    files = sorted(folder.glob(f"*_{version(release_version)}_*.{extension}"))
     if len(files) != 1:
         raise ValueError(f"Expected one {platform} artifact, found {len(files)}")
     source = files[0]
@@ -155,7 +163,7 @@ def publish(release_version, repo, commit, root=ROOT):
             print("This version is already published; leaving all artifacts unchanged.")
             return
     else:
-        gh("release", "create", tag, "--target", commit, "--draft", "--title", f"Akko Studio {release_version}", "--notes-file", ".github/release-notes.md")
+        gh("release", "create", tag, "--target", commit, "--draft", "--title", f"Open Akko {release_version}", "--notes-file", ".github/release-notes.md")
     files = [str(p) for p in sorted((root / "artifacts/release").iterdir()) if p.is_file()]
     gh("release", "upload", tag, *files, "--clobber")
     gh("release", "edit", tag, "--draft=false", "--latest")

@@ -441,7 +441,7 @@
   }
 }
 
-/* Akko Studio local edition */
+/* Open Akko local edition */
 :root[data-colorway="akko"] {
  --background: #14131c; --foreground: #eeedf5;
  --card: #1d1b29; --card-foreground: #eeedf5;

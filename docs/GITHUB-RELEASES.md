@@ -29,13 +29,13 @@ Conservez une sauvegarde de la clé privée hors du dépôt. Les clients déjà 
 | Nouvelle version | Fenêtre avec nouveautés, « Plus tard » et bouton de mise à jour |
 | Acceptation | Téléchargement, contrôle de signature, attente des opérations USB, arrêt audio et installation |
 
-Une compilation en échec ne publie pas une version partielle. Une release publiée n’est pas remplacée lors d’une relance du même workflow. Une release laissée en brouillon peut être complétée en relançant la même exécution.
+Les tags ne déclenchent pas de publication. Une fusion dans `main`, un push dans `main` ou un lancement manuel sur `main` déclenche les contrôles. Une compilation en échec ne publie pas une version partielle. Une release publiée n’est pas remplacée lors d’une relance du même workflow. Une release laissée en brouillon peut être complétée en relançant la même exécution.
 
 « Plus tard » reporte le rappel de cette version pendant 24 heures. Une nouvelle version différente est proposée sans attendre. Le bouton de recherche dans le panneau latéral permet de vérifier à tout moment. Une absence de réseau ne déclenche pas de fenêtre d’erreur lors des vérifications automatiques.
 
 ## Versions
 
-La version du dépôt est le point de départ, actuellement `0.12.0`. Pour chaque exécution du workflow, le numéro d’exécution GitHub s’ajoute au troisième nombre : première exécution `0.12.1`, deuxième `0.12.2`, etc. Une relance de la même exécution conserve son numéro.
+La version du dépôt est le point de départ, actuellement `0.12.0`. Pour chaque exécution du workflow, le numéro d’exécution GitHub s’ajoute au troisième nombre : exécution numéro 5 : `0.12.5`, numéro 6 : `0.12.6`, etc. Les versions déjà publiées restent inchangées. Une relance de la même exécution conserve son numéro.
 
 Le workflow met à jour les versions des fichiers de compilation dans son espace temporaire. Il n’ajoute pas de commit de version à `main` et ne crée pas de boucle de publication. Le tag vise le commit exact ayant déclenché la compilation.
 

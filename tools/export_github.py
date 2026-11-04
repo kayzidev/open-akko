@@ -10,7 +10,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
 SKIP_DIRS = {".git", "node_modules", "target", "dist", "dist-web", "dist-ssr", "update-backups", "__pycache__", ".vscode", ".idea", "artifacts", ".release"}
-SKIP_FILES = {"HANDOFF.md", "AKKO-STUDIO.md", ".DS_Store"}
+SKIP_FILES = {"HANDOFF.md", "AKKO-STUDIO.md", "OPEN-AKKO.md", ".DS_Store"}
 
 
 def sources(root=ROOT):
