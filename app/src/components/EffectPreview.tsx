@@ -38,7 +38,9 @@ export default function EffectPreview({
   };
   useEffect(()=>{hits.current=[];},[param.mode]);
   const paramRef = useRef(param);
-  paramRef.current = param;
+  useEffect(() => {
+    paramRef.current = param;
+  });
 
   useEffect(() => {
     const still =
