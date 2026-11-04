@@ -43,7 +43,7 @@ export default function AudioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     alive.current = true;
     if (BUILD !== "app") return () => { alive.current = false; };
-    void refresh(); let pending = false;
+    let pending = false;
     const refreshSources = () => { void refresh(); };
     window.addEventListener("focus", refreshSources);
     const sourceTimer = setInterval(refreshSources, 15000);
@@ -58,7 +58,8 @@ export default function AudioProvider({ children }: { children: ReactNode }) {
       } catch (e) { if (alive.current) setSourceError(String(e)); }
       finally { pending = false; }
     };
-    void poll(); const timer = setInterval(() => void poll(), 80);
+    const timer = setInterval(() => void poll(), 80);
+    Promise.resolve().then(() => { void refresh(); void poll(); });
     return () => { alive.current = false; clearInterval(timer); clearInterval(sourceTimer); window.removeEventListener("focus", refreshSources); };
   }, []);
   return <Context.Provider value={{ config, status, sources, busy, sourceError, change, setMode, refresh }}>{children}</Context.Provider>;

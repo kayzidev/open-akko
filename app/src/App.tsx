@@ -116,33 +116,6 @@ export default function App() {
     }
   }, [device, unknown]);
 
-  // Apply the check record once per connect. Sends nothing.
-  const applied = useRef<string | null>(null);
-  useEffect(() => {
-    if (!device) {
-      applied.current = null;
-      return;
-    }
-    const key = `${device.spec.id}:${device.path}`;
-    if (applied.current === key) return;
-    applied.current = key;
-    const record = loadOwner(device.spec.id);
-    if (!record) return;
-    applyOwnerRecord(record)
-      .then(() => doScan())
-      .catch(() => {
-        applied.current = null;
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [device?.spec.id, device?.path]);
-
-  // Setup tab while the board is unknown or read-only and the check has
-  // not been run. Everywhere else it is a button on Contribute.
-  const needsCheck =
-    !!device &&
-    (device.spec.unregistered || device.readOnly) &&
-    !setupDone(loadWizard(device.spec.id));
-
   const doScan = useCallback(async () => {
     try {
       const r = await scan();
@@ -162,10 +135,36 @@ export default function App() {
     }
   }, []);
 
+  // Apply the check record once per connect. Sends nothing.
+  const applied = useRef<string | null>(null);
   useEffect(() => {
-    doScan();
+    if (!device) {
+      applied.current = null;
+      return;
+    }
+    const key = `${device.spec.id}:${device.path}`;
+    if (applied.current === key) return;
+    applied.current = key;
+    const record = loadOwner(device.spec.id);
+    if (!record) return;
+    applyOwnerRecord(record)
+      .then(() => doScan())
+      .catch(() => {
+        applied.current = null;
+      });
+  }, [device?.spec.id, device?.path, doScan]);
+
+  // Setup tab while the board is unknown or read-only and the check has
+  // not been run. Everywhere else it is a button on Contribute.
+  const needsCheck =
+    !!device &&
+    (device.spec.unregistered || device.readOnly) &&
+    !setupDone(loadWizard(device.spec.id));
+
+  useEffect(() => {
     const t = setInterval(doScan, 3000);
     window.addEventListener("focus", doScan);
+    Promise.resolve().then(() => void doScan());
     return () => {
       clearInterval(t);
       window.removeEventListener("focus", doScan);
