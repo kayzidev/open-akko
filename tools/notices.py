@@ -35,7 +35,7 @@ VENDORED = (
     {"name": "shadcn/ui", "license": "MIT",
      "holder": "Copyright (c) 2023 shadcn",
      "url": "https://ui.shadcn.com",
-     "where": "app/src/components/ui, app/src/lib/utils.ts"},
+     "where": "app/src/components/ui, app/src/lib/utils.ts, app/src/vendor/shadcn-tailwind.css"},
 )
 
 LICENSE_NAMES = ("LICENSE", "LICENCE", "COPYING", "NOTICE")

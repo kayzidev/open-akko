@@ -26,58 +26,57 @@ Bundled into the application's JavaScript and CSS.
 | @floating-ui/react-dom | 2.1.9 | MIT |
 | @floating-ui/utils | 0.2.12 | MIT |
 | @radix-ui/number | 1.1.3 | MIT |
-| @radix-ui/primitive | 1.1.7 | MIT |
-| @radix-ui/react-arrow | 1.1.15 | MIT |
-| @radix-ui/react-collection | 1.1.15 | MIT |
+| @radix-ui/primitive | 1.2.0 | MIT |
+| @radix-ui/react-arrow | 1.1.17 | MIT |
+| @radix-ui/react-collection | 1.2.0 | MIT |
 | @radix-ui/react-compose-refs | 1.1.5 | MIT |
-| @radix-ui/react-context | 1.2.2 | MIT |
-| @radix-ui/react-dialog | 1.1.23 | MIT |
-| @radix-ui/react-direction | 1.1.4 | MIT |
-| @radix-ui/react-dismissable-layer | 1.1.19 | MIT |
-| @radix-ui/react-dropdown-menu | 2.1.24 | MIT |
-| @radix-ui/react-focus-guards | 1.1.6 | MIT |
-| @radix-ui/react-focus-scope | 1.1.16 | MIT |
+| @radix-ui/react-context | 1.3.0 | MIT |
+| @radix-ui/react-dialog | 1.3.1 | MIT |
+| @radix-ui/react-direction | 1.2.0 | MIT |
+| @radix-ui/react-dismissable-layer | 1.2.1 | MIT |
+| @radix-ui/react-dropdown-menu | 2.2.1 | MIT |
+| @radix-ui/react-focus-guards | 1.2.0 | MIT |
+| @radix-ui/react-focus-scope | 1.3.1 | MIT |
 | @radix-ui/react-id | 1.1.4 | MIT |
-| @radix-ui/react-label | 2.1.15 | MIT |
-| @radix-ui/react-menu | 2.1.24 | MIT |
-| @radix-ui/react-popover | 1.1.23 | MIT |
-| @radix-ui/react-popper | 1.3.7 | MIT |
-| @radix-ui/react-portal | 1.1.17 | MIT |
-| @radix-ui/react-presence | 1.1.10 | MIT |
-| @radix-ui/react-primitive | 2.1.10 | MIT |
-| @radix-ui/react-roving-focus | 1.1.19 | MIT |
-| @radix-ui/react-scroll-area | 1.2.18 | MIT |
-| @radix-ui/react-select | 2.3.7 | MIT |
-| @radix-ui/react-separator | 1.1.15 | MIT |
-| @radix-ui/react-slider | 1.4.7 | MIT |
-| @radix-ui/react-slot | 1.3.3 | MIT |
-| @radix-ui/react-switch | 1.3.7 | MIT |
-| @radix-ui/react-tooltip | 1.2.16 | MIT |
-| @radix-ui/react-use-callback-ref | 1.1.4 | MIT |
-| @radix-ui/react-use-controllable-state | 1.2.6 | MIT |
+| @radix-ui/react-label | 2.1.17 | MIT |
+| @radix-ui/react-menu | 2.2.1 | MIT |
+| @radix-ui/react-popover | 1.3.1 | MIT |
+| @radix-ui/react-popper | 1.4.0 | MIT |
+| @radix-ui/react-portal | 1.2.0 | MIT |
+| @radix-ui/react-presence | 1.1.11 | MIT |
+| @radix-ui/react-primitive | 2.2.0 | MIT |
+| @radix-ui/react-roving-focus | 1.2.1 | MIT |
+| @radix-ui/react-scroll-area | 1.4.0 | MIT |
+| @radix-ui/react-select | 2.4.1 | MIT |
+| @radix-ui/react-separator | 1.2.0 | MIT |
+| @radix-ui/react-slider | 1.6.1 | MIT |
+| @radix-ui/react-slot | 1.5.0 | MIT |
+| @radix-ui/react-switch | 1.4.1 | MIT |
+| @radix-ui/react-tooltip | 1.4.1 | MIT |
+| @radix-ui/react-use-callback-ref | 1.1.5 | MIT |
+| @radix-ui/react-use-controllable-state | 1.3.0 | MIT |
 | @radix-ui/react-use-effect-event | 0.0.5 | MIT |
 | @radix-ui/react-use-is-hydrated | 0.1.3 | MIT |
 | @radix-ui/react-use-layout-effect | 1.1.4 | MIT |
-| @radix-ui/react-use-previous | 1.1.4 | MIT |
-| @radix-ui/react-use-size | 1.1.4 | MIT |
-| @radix-ui/react-visually-hidden | 1.2.11 | MIT |
-| @tauri-apps/api | 2.11.1 | Apache-2.0 OR MIT |
-| @tauri-apps/plugin-dialog | 2.7.2 | MIT OR Apache-2.0 |
-| @tauri-apps/plugin-opener | 2.5.4 | MIT OR Apache-2.0 |
+| @radix-ui/react-use-size | 1.1.5 | MIT |
+| @radix-ui/react-visually-hidden | 1.2.13 | MIT |
+| @tauri-apps/api | 2.12.4 | Apache-2.0 OR MIT |
+| @tauri-apps/plugin-dialog | 2.8.4 | MIT OR Apache-2.0 |
+| @tauri-apps/plugin-opener | 2.7.2 | MIT OR Apache-2.0 |
 | aria-hidden | 1.2.6 | MIT |
 | class-variance-authority | 0.7.1 | Apache-2.0 |
 | clsx | 2.1.1 | MIT |
 | get-nonce | 1.0.1 | MIT |
-| lucide-react | 1.27.0 | ISC |
+| lucide-react | 1.66.0 | ISC |
 | next-themes | 0.4.6 | MIT |
-| react | 19.2.8 | MIT |
-| react-dom | 19.2.8 | MIT |
+| react | 19.3.1 | MIT |
+| react-dom | 19.3.1 | MIT |
 | react-remove-scroll | 2.7.2 | MIT |
 | react-remove-scroll-bar | 2.3.8 | MIT |
 | react-style-singleton | 2.2.3 | MIT |
-| scheduler | 0.27.0 | MIT |
-| sonner | 2.0.7 | MIT |
-| tailwind-merge | 3.6.0 | MIT |
+| scheduler | 0.28.0 | MIT |
+| sonner | 2.0.8 | MIT |
+| tailwind-merge | 3.7.0 | MIT |
 | tailwindcss | 4.3.3 | MIT |
 | tslib | 2.8.1 | 0BSD |
 | tw-animate-css | 1.4.0 | MIT |
@@ -91,7 +90,7 @@ license in an SPDX header.
 
 **shadcn/ui** (<https://ui.shadcn.com>), MIT  
 Copyright (c) 2023 shadcn  
-In `app/src/components/ui, app/src/lib/utils.ts`
+In `app/src/components/ui, app/src/lib/utils.ts, app/src/vendor/shadcn-tailwind.css`
 
 ## Rust crates
 
