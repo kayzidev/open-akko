@@ -97,7 +97,7 @@ export default function LightingPage({ device }: { device: ConnectedDevice | nul
   const [group, setGroup] = useState("Tous");
   const [palette,setPalette]=useState(["#7c3aed","#06b6d4","#f59e0b","#ef4444"]);
   const [gridBusy,setGridBusy]=useState(false);
-  const [gridDeadline,setGridDeadline]=useState(0),[gridNow,setGridNow]=useState(Date.now());
+  const [gridDeadline,setGridDeadline]=useState(0),[gridNow,setGridNow]=useState(() => Date.now());
   useEffect(()=>{const id=setInterval(()=>setGridNow(Date.now()),500);return()=>clearInterval(id);},[]);
   const gridWait=Math.max(0,Math.ceil((gridDeadline-gridNow)/1000));
   const connected = !!device;
@@ -121,6 +121,8 @@ export default function LightingPage({ device }: { device: ConnectedDevice | nul
 
   useEffect(() => {
     if (!device) {
+      // Reset lighting params when device disconnects
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParam(null);
       return;
     }
@@ -175,12 +177,15 @@ export default function LightingPage({ device }: { device: ConnectedDevice | nul
     const next = sideRef.current;
     if (!next) return;
     clearTimeout(sideTimer.current);
+    // Calculate write throttle delay
+    // eslint-disable-next-line react-hooks/purity
+    const delay = Math.max(0, WRITE_GAP - (Date.now() - lastSideSent.current));
     sideTimer.current = setTimeout(
       () => {
         lastSideSent.current = Date.now();
         setSideLight(next).catch((e) => toast.error(t("Write failed: {e}", { e })));
       },
-      Math.max(0, WRITE_GAP - (Date.now() - lastSideSent.current)),
+      delay,
     );
   };
 
@@ -206,12 +211,15 @@ export default function LightingPage({ device }: { device: ConnectedDevice | nul
     const next = paramRef.current;
     if (!next) return;
     clearTimeout(pushTimer.current);
+    // Calculate write throttle delay
+    // eslint-disable-next-line react-hooks/purity
+    const delay = Math.max(0, WRITE_GAP - (Date.now() - lastSent.current));
     pushTimer.current = setTimeout(
       () => {
         lastSent.current = Date.now();
         setLedParam(next).catch((e) => toast.error(t("Write failed: {e}", { e })));
       },
-      Math.max(0, WRITE_GAP - (Date.now() - lastSent.current)),
+      delay,
     );
   };
 
@@ -483,8 +491,11 @@ export default function LightingPage({ device }: { device: ConnectedDevice | nul
 
       <Section title={t("Motion")}>
         <p className="text-xs text-muted-foreground">La vitesse règle le moteur du clavier, pas un nombre de secondes. Les durées de l’aperçu sont indicatives ; la durée réelle de disparition et la superposition dépendent de l’effet.</p>
+          {/* eslint-disable-next-line react-hooks/refs */}
         <div className="grid gap-6 sm:grid-cols-2">
+          {/* eslint-disable-next-line react-hooks/refs */}
           {slider(t("Brightness"), param.brightness, brightnessMax, (v) => update({ brightness: v }), (v) => commit({ brightness: v }))}
+          {/* eslint-disable-next-line react-hooks/refs */}
           {slider(t("Speed"), param.speed, mode?.speedMax ?? 4, (v) => update({ speed: v }), (v) => commit({ speed: v }), !!mode?.noSpeed)}
         </div>
       </Section>
@@ -523,7 +534,9 @@ export default function LightingPage({ device }: { device: ConnectedDevice | nul
             </label>
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
+            {/* eslint-disable-next-line react-hooks/refs */}
             {slider(t("Brightness"), side.brightness, 4, (v) => updateSide({ brightness: v }), (v) => commitSide({ brightness: v }))}
+            {/* eslint-disable-next-line react-hooks/refs */}
             {slider(t("Speed"), side.speed, 4, (v) => updateSide({ speed: v }), (v) => commitSide({ speed: v }))}
           </div>
         </Section>

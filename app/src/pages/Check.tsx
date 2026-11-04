@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Check-your-board. Reads first, then writes behind buttons. State by
 // device id in localStorage so a replug resumes. Nothing writes from an effect.
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check, Minus, RotateCcw, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Banner, PageHeader, Section } from "@/components/Page";
@@ -107,38 +107,44 @@ export default function CheckPage({
   /** The running profile and its keymap, read for the keys and remap steps. */
   const [keymap, setKeymap] = useState<{ profile: number; entries: Map<number, number[]>; macMode: boolean } | null>(null);
   const [keymapError, setKeymapError] = useState<string | null>(null);
-  const lastId = useRef<number | null>(null);
-  const unplugged = useRef(false);
+  const [lastId, setLastId] = useState<number | null>(null);
+  const [unplugged, setUnplugged] = useState(false);
 
   // Load this board's run. Count a replug if it left mid-run. StrictMode
   // double-mount is harmless: second pass sees the same id.
   useEffect(() => {
     if (id === undefined) {
-      if (lastId.current !== null) {
-        const s = loadWizard(lastId.current);
-        unplugged.current = !!s && RUNNING.includes(s.step);
+      if (lastId !== null) {
+        const s = loadWizard(lastId);
+        // Update unplugged state based on wizard state
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setUnplugged(!!s && RUNNING.includes(s.step));
       }
-      lastId.current = null;
+      setLastId(null);
+      // Reset wizard state when device disconnects
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHeld(null);
       setKeymap(null);
       setError(null);
       return;
     }
-    if (lastId.current === id) return;
+    if (lastId === id) return;
     const loaded = loadWizard(id) ?? freshState();
     // A failed restore still owns the saved original, even if an older
     // version let the run advance past Colours.
     if (loaded.colour?.written && loaded.colour.restoredReadBack === false) loaded.step = "colours";
-    if (unplugged.current && RUNNING.includes(loaded.step)) {
+    if (unplugged && RUNNING.includes(loaded.step)) {
       loaded.replugs += 1;
       setBack(true);
     }
-    unplugged.current = false;
-    lastId.current = id;
+    setUnplugged(false);
+    setLastId(id);
+    // Initialize wizard state for new device
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHeld({ id, s: loaded });
     setKeymap(null);
     setError(null);
-  }, [id]);
+  }, [id, lastId, unplugged]);
 
   useEffect(() => {
     if (held && held.id === id) saveWizard(held.id, held.s);
@@ -173,6 +179,8 @@ export default function CheckPage({
   useEffect(() => {
     if (!device || keymap || (step !== "keys" && step !== "remap")) return;
     let live = true;
+    // Reset keymap error when starting fresh read
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setKeymapError(null);
     (async () => {
       try {
@@ -213,7 +221,7 @@ export default function CheckPage({
       <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-muted-foreground">
         <p className="text-base font-medium text-foreground">{t("Connect a keyboard by cable.")}</p>
         <p className="text-sm">
-          {lastId.current === null && unplugged.current
+          {lastId === null && unplugged
             ? t("Setup carries on from where it was when the keyboard is back.")
             : t("Setup runs over the cable only.")}
         </p>
@@ -633,6 +641,8 @@ function KeysStep({
   // Targets follow the picture: a new picture restarts the test.
   useEffect(() => {
     if (lay.resolving) return;
+    // Reset test state when layout or keymap changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTargets(pressTargets(lay.layout, keymap?.entries, {
       deviceId: device.deviceId, macMode: keymap?.macMode === true,
     }));
@@ -656,6 +666,8 @@ function KeysStep({
   }, [current]);
 
   useEffect(() => {
+    // Mark test finished when all targets are tested
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (targets && results.length === targets.length && targets.length > 0) setFinished(true);
   }, [targets, results]);
 

@@ -112,7 +112,7 @@ export default function KeyPicker({
   onReset,
 }: Props) {
   const [combo, setCombo] = useState({ main: 0, extraA: 0, extraB: 0 });
-  const recents = useMemo(readRecents, []);
+  const recents = useMemo(() => readRecents(), []);
 
   const q = query.trim().toLowerCase();
   const hits = useMemo(() => searchAssignables(query, actionLabel), [query, actionLabel]);

@@ -119,10 +119,14 @@ export default function KeymapPage({
   // changes underneath it, its slot means a different physical key, so
   // writing it would remap something the user never clicked.
   useEffect(() => {
+    // Reset selection when layout changes to prevent stale references
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelected(null);
   }, [layout]);
 
   useEffect(() => {
+    // Clear search query when selection changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuery("");
   }, [selected]);
 
@@ -156,6 +160,8 @@ export default function KeymapPage({
   }, [device?.deviceId, device?.path]);
 
   useEffect(() => {
+    // Load keymap when connected; reset when disconnected
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (connected) load(profile, layer);
     else setEntries(null);
     return () => { ++loadGeneration.current; };

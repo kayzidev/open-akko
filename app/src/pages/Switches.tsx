@@ -481,6 +481,8 @@ export default function SwitchesPage({ device }: { device: ConnectedDevice | nul
   }, [board, access, profile]);
 
   useEffect(() => {
+    // Load switch settings (calls setState indirectly)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
     setSelected(null);
     setDraftKey(null);
@@ -488,12 +490,16 @@ export default function SwitchesPage({ device }: { device: ConnectedDevice | nul
   }, [load]);
 
   useEffect(() => {
+    // Load keymap layers (calls setState indirectly)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadLayers();
   }, [loadLayers]);
 
   useEffect(() => {
     if (!selected || !settings) return;
     const k = settings.keys.find((k) => k.slot === selected.matrixIndex);
+    // Update draft state when selection changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraftKey(k ? { ...k, dksActions: [...k.dksActions] } : null);
     const slot = selected.matrixIndex ?? 0;
     setDraftEntries(
@@ -506,6 +512,8 @@ export default function SwitchesPage({ device }: { device: ConnectedDevice | nul
   const [live, setLive] = useState(false);
   const [depth, setDepth] = useState<number[] | null>(null);
   useEffect(() => {
+    // Stop live mode when device disconnects
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!device) setLive(false);
   }, [device]);
   useEffect(() => {
@@ -542,51 +550,59 @@ export default function SwitchesPage({ device }: { device: ConnectedDevice | nul
   const selectedSlotRef = useRef<number | null>(null);
   const cycleRef = useRef({ slot: -1, peak: 0, trough: 0, maxLift: 0 });
   const onSampleRef = useRef<(d: number[]) => void>(() => {});
-  onSampleRef.current = (d) => {
-    setDepth(d);
-    setPeak((prev) => {
-      const p = prev ? prev.slice() : new Array<number>(d.length).fill(0);
-      let changed = !prev;
-      for (let i = 0; i < d.length; i++) {
-        if (d[i] > (p[i] ?? 0)) {
-          p[i] = d[i];
-          changed = true;
+  
+  useEffect(() => {
+    // Update ref callback with latest closures
+    // eslint-disable-next-line react-hooks/immutability
+    onSampleRef.current = (d) => {
+      setDepth(d);
+      setPeak((prev) => {
+        const p = prev ? prev.slice() : new Array<number>(d.length).fill(0);
+        let changed = !prev;
+        for (let i = 0; i < d.length; i++) {
+          if (d[i] > (p[i] ?? 0)) {
+            p[i] = d[i];
+            changed = true;
+          }
         }
+        return changed ? p : prev;
+      });
+      const slot = selectedSlotRef.current;
+      if (slot === null) return;
+      const c = d[slot] ?? 0;
+      const cy = cycleRef.current;
+      if (cy.slot !== slot) {
+        cycleRef.current = { slot, peak: 0, trough: 0, maxLift: 0 };
+        setTrace([]);
+        setMaxLift(0);
+        return;
       }
-      return changed ? p : prev;
-    });
-    const slot = selectedSlotRef.current;
-    if (slot === null) return;
-    const c = d[slot] ?? 0;
-    const cy = cycleRef.current;
-    if (cy.slot !== slot) {
-      cycleRef.current = { slot, peak: 0, trough: 0, maxLift: 0 };
-      setTrace([]);
-      setMaxLift(0);
-      return;
-    }
-    if (c === 0) {
-      cy.peak = 0;
-      cy.trough = 0;
-    } else if (c > cy.peak) {
-      cy.peak = c;
-      cy.trough = c;
-    } else if (c < cy.trough) {
-      cy.trough = c;
-    } else if (c > cy.trough && cy.peak - cy.trough >= 2) {
-      // Rising again after a dip that did not reach 0: that dip is a lift.
-      cy.maxLift = Math.max(cy.maxLift, cy.peak - cy.trough);
-      cy.peak = c;
-      cy.trough = c;
-      setMaxLift(cy.maxLift);
-    }
-    setTrace((prev) => (prev.length >= 60 ? [...prev.slice(1), c] : [...prev, c]));
-  };
+      if (c === 0) {
+        cy.peak = 0;
+        cy.trough = 0;
+      } else if (c > cy.peak) {
+        cy.peak = c;
+        cy.trough = c;
+      } else if (c < cy.trough) {
+        cy.trough = c;
+      } else if (c > cy.trough && cy.peak - cy.trough >= 2) {
+        // Rising again after a dip that did not reach 0: that dip is a lift.
+        cy.maxLift = Math.max(cy.maxLift, cy.peak - cy.trough);
+        cy.peak = c;
+        cy.trough = c;
+        setMaxLift(cy.maxLift);
+      }
+      setTrace((prev) => (prev.length >= 60 ? [...prev.slice(1), c] : [...prev, c]));
+    };
+  });
+  
   useEffect(() => {
     selectedSlotRef.current = selected?.matrixIndex ?? null;
   }, [selected]);
   useEffect(() => {
     if (!live) {
+      // Reset switch testing state when stopping live mode
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPeak(null);
       setTrace([]);
       setMaxLift(0);

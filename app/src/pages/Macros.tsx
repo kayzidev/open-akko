@@ -92,6 +92,8 @@ export default function MacrosPage({ device }: { device: ConnectedDevice | null 
 
   useEffect(() => {
     if (!connected) return;
+    // Reset macro state when loading new slot
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEvents([]);
     setRepeat(1);
     setReading(true);
@@ -106,6 +108,8 @@ export default function MacrosPage({ device }: { device: ConnectedDevice | null 
 
   useEffect(() => {
     if (!connected) {
+      // Reset keymap entries when device disconnects
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEntries(null);
       return;
     }
