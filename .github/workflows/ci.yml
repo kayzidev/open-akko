@@ -25,6 +25,7 @@ jobs:
         run: |
           python tools/check_studio_profiles.py
           python -m unittest discover -s tools -p "test_release.py"
+          python -m unittest discover -s tools -p "test_appimage.py"
           python tools/release.py validate
       - name: Frontend checks
         working-directory: app
