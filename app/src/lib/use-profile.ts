@@ -39,6 +39,8 @@ export function useBoardProfile(device: ConnectedDevice | null): BoardProfile {
   const path = device?.path;
   useEffect(() => {
     if (!device) {
+      // Reset profile state when device disconnects
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocal(0);
       setSeen(0);
       return;

@@ -217,6 +217,9 @@ export function useBoardLayout(device: ConnectedDevice | null): BoardLayoutState
 
   useEffect(() => {
     let live = true;
+    // Reset all state when starting new layout resolution.
+    // These synchronous batched updates are intentional state resets when deps change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResolving(true);
     setPending(false);
     setInference(null);

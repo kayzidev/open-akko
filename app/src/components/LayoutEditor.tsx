@@ -321,31 +321,35 @@ export default function LayoutEditor({
   // or picks out the drawn key already holding it.
   const [listen, setListen] = useState(false);
   const pressRef = useRef<(slot: number) => void>(() => {});
-  pressRef.current = (slot) => {
-    const matrix = inference?.matrix ?? nearest?.matrix;
-    if (!matrix || !draft) return;
-    const entry = matrix.slice(slot * 4, slot * 4 + 4);
-    const name = entryLabel(entry);
-    if (selectedKey) {
-      const usage = drawableUsage(entry);
-      if (usage === null) {
-        toast(t("Slot {n} is {label}, which cannot be drawn.", { n: slot, label: name }));
+  
+  useEffect(() => {
+    pressRef.current = (slot) => {
+      const matrix = inference?.matrix ?? nearest?.matrix;
+      if (!matrix || !draft) return;
+      const entry = matrix.slice(slot * 4, slot * 4 + 4);
+      const name = entryLabel(entry);
+      if (selectedKey) {
+        const usage = drawableUsage(entry);
+        if (usage === null) {
+          toast(t("Slot {n} is {label}, which cannot be drawn.", { n: slot, label: name }));
+          return;
+        }
+        updateKey(selectedKey.id, { usage, note: undefined });
+        setSelected(null);
+        toast(t("{label}, slot {n}, set on the selected key.", { label: legend(usage), n: slot }));
         return;
       }
-      updateKey(selectedKey.id, { usage, note: undefined });
-      setSelected(null);
-      toast(t("{label}, slot {n}, set on the selected key.", { label: legend(usage), n: slot }));
-      return;
-    }
-    const i = inference?.layout.keys.findIndex((k) => k.matrixIndex === slot) ?? -1;
-    const drawn = i >= 0 ? draft.keys[i] : undefined;
-    if (drawn) {
-      setSelected({ kind: "key", id: drawn.id });
-      toast(t("Slot {n} is {label}: the highlighted key.", { n: slot, label: name }));
-    } else {
-      toast(t("Slot {n} is {label}, not drawn yet. Click a key to give it this label, then press again.", { n: slot, label: name }));
-    }
-  };
+      const i = inference?.layout.keys.findIndex((k) => k.matrixIndex === slot) ?? -1;
+      const drawn = i >= 0 ? draft.keys[i] : undefined;
+      if (drawn) {
+        setSelected({ kind: "key", id: drawn.id });
+        toast(t("Slot {n} is {label}: the highlighted key.", { n: slot, label: name }));
+      } else {
+        toast(t("Slot {n} is {label}, not drawn yet. Click a key to give it this label, then press again.", { n: slot, label: name }));
+      }
+    };
+  }, [inference, nearest, draft, selectedKey, updateKey, setSelected]);
+  
   useEffect(() => {
     if (!listen) return;
     let timer: ReturnType<typeof setInterval> | null = null;

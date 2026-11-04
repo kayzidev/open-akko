@@ -128,6 +128,8 @@ export default function DevicePage({
 
   useEffect(() => {
     if (board) load();
+    // Reset settings when device disconnects
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     else setS(null);
   }, [board, load]);
 
@@ -138,6 +140,8 @@ export default function DevicePage({
   const [screenVersion, setScreenVersion] = useState<number | null>(null);
   useEffect(() => {
     if (!board) {
+      // Reset screen version when device disconnects
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setScreenVersion(null);
       return;
     }

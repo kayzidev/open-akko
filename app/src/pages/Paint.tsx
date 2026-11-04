@@ -155,6 +155,8 @@ export default function PaintPage({ device }: { device: ConnectedDevice | null }
     const stored = loadPattern(boardKey);
     if (stored) {
       history.current = [];
+      // Load stored pattern when board key changes
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPattern(stored);
     }
   }, [boardKey]);
@@ -440,6 +442,7 @@ export default function PaintPage({ device }: { device: ConnectedDevice | null }
                 {t("Finding your keyboard…")}
               </div>
             )}
+            {/* eslint-disable-next-line react-hooks/refs */}
             {!resolving && paintKeys.map((k) => {
               const stored = pattern[k.matrixIndex!] ?? "#000000";
               // Hovering previews the brush so the first click has no surprise.
