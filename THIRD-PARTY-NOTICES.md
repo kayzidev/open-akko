@@ -67,7 +67,7 @@ Bundled into the application's JavaScript and CSS.
 | class-variance-authority | 0.7.1 | Apache-2.0 |
 | clsx | 2.1.1 | MIT |
 | get-nonce | 1.0.1 | MIT |
-| lucide-react | 1.66.0 | ISC |
+| lucide-react | 1.68.0 | ISC |
 | next-themes | 0.4.6 | MIT |
 | react | 19.3.1 | MIT |
 | react-dom | 19.3.1 | MIT |
@@ -77,8 +77,8 @@ Bundled into the application's JavaScript and CSS.
 | scheduler | 0.28.0 | MIT |
 | sonner | 2.0.8 | MIT |
 | tailwind-merge | 3.7.0 | MIT |
-| tailwindcss | 4.3.3 | MIT |
-| tslib | 2.8.1 | 0BSD |
+| tailwindcss | 4.3.4 | MIT |
+| tslib | 2.9.1 | 0BSD |
 | tw-animate-css | 1.4.0 | MIT |
 | use-callback-ref | 1.3.3 | MIT |
 | use-sidecar | 1.1.3 | MIT |
@@ -173,7 +173,7 @@ platform, so some crates are present only on macOS, Windows or Linux.
 | defmt | 1.2.0 | MIT OR Apache-2.0 |
 | defmt-macros | 1.2.0 | MIT OR Apache-2.0 |
 | defmt-parser | 1.1.0 | MIT OR Apache-2.0 |
-| deranged | 0.5.9 | MIT OR Apache-2.0 |
+| deranged | 0.5.8 | MIT OR Apache-2.0 |
 | derive_more | 2.1.1 | MIT |
 | derive_more-impl | 2.1.1 | MIT |
 | digest | 0.10.7 | MIT OR Apache-2.0 |
