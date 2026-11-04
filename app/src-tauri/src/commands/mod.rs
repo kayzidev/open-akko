@@ -1608,6 +1608,63 @@ pub fn export_config(state: tauri::State<AppState>, path: String) -> Result<Stri
     Ok(format!("saved {} profiles to {path}", cfg.profiles.len()))
 }
 
+/// Validates a SavedConfig for safety and correctness.
+fn validate_saved_config(cfg: &SavedConfig) -> Result<(), String> {
+    const MAX_PROFILES: usize = 8;
+    const MAX_FN_LAYERS: usize = 8;
+    const PROFILE_SIZE: usize = 512;
+    const MIN_DEBOUNCE: u8 = 1;
+    const MAX_DEBOUNCE: u8 = 10;
+
+    if cfg.profiles.len() > MAX_PROFILES {
+        return Err(format!(
+            "config has {} profiles, maximum is {MAX_PROFILES}",
+            cfg.profiles.len()
+        ));
+    }
+
+    if cfg.fn_layers.len() > MAX_FN_LAYERS {
+        return Err(format!(
+            "config has {} FN layers, maximum is {MAX_FN_LAYERS}",
+            cfg.fn_layers.len()
+        ));
+    }
+
+    for (i, profile) in cfg.profiles.iter().enumerate() {
+        if profile.len() != PROFILE_SIZE {
+            return Err(format!(
+                "profile {i} has {} bytes, expected {PROFILE_SIZE}",
+                profile.len()
+            ));
+        }
+    }
+
+    for (i, layer) in cfg.fn_layers.iter().enumerate() {
+        if layer.len() != PROFILE_SIZE {
+            return Err(format!(
+                "FN layer {i} has {} bytes, expected {PROFILE_SIZE}",
+                layer.len()
+            ));
+        }
+    }
+
+    if cfg.debounce < MIN_DEBOUNCE || cfg.debounce > MAX_DEBOUNCE {
+        return Err(format!(
+            "debounce {} is out of range ({MIN_DEBOUNCE}-{MAX_DEBOUNCE})",
+            cfg.debounce
+        ));
+    }
+
+    if cfg.led.brightness > 7 {
+        return Err(format!(
+            "LED brightness {} exceeds maximum of 7",
+            cfg.led.brightness
+        ));
+    }
+
+    Ok(())
+}
+
 /// Applies a saved config: only slots that differ are written, then the
 /// settings and lighting. Refuses configs from a different board model,
 /// slot meanings follow the board's matrix.
@@ -1615,6 +1672,9 @@ pub fn export_config(state: tauri::State<AppState>, path: String) -> Result<Stri
 pub fn import_config(state: tauri::State<AppState>, path: String) -> Result<String, String> {
     let raw = std::fs::read_to_string(&path).map_err(err_str)?;
     let cfg: SavedConfig = serde_json::from_str(&raw).map_err(err_str)?;
+
+    validate_saved_config(&cfg)?;
+
     let spec = {
         let inner = state.inner.lock();
         inner
@@ -2148,5 +2208,86 @@ impl AppState {
             session.stop();
         }
         self.audio_status.lock().clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::protocol::{LedParam, SleepTimes};
+    use crate::session::SavedConfig;
+
+    fn make_valid_config() -> SavedConfig {
+        SavedConfig {
+            version: 1,
+            device_id: 0x3151_4010,
+            family: "gen2".to_string(),
+            board: "Test Board".to_string(),
+            profiles: vec![vec![0u8; 512]],
+            fn_layers: vec![vec![0u8; 512]],
+            led: LedParam {
+                mode: 1,
+                speed: 3,
+                brightness: 5,
+                option: 0,
+                dazzle: false,
+                r: 0,
+                g: 0,
+                b: 0,
+            },
+            side_light: None,
+            debounce: 5,
+            sleep: SleepTimes {
+                sleep_bt: 10,
+                sleep_24: 10,
+                deep_bt: 0,
+                deep_24: 0,
+            },
+            options: None,
+        }
+    }
+
+    #[test]
+    fn validate_config_accepts_valid_config() {
+        let cfg = make_valid_config();
+        assert!(validate_saved_config(&cfg).is_ok());
+    }
+
+    #[test]
+    fn validate_config_rejects_too_many_profiles() {
+        let mut cfg = make_valid_config();
+        cfg.profiles = vec![vec![0u8; 512]; 10];
+        assert!(validate_saved_config(&cfg).is_err());
+    }
+
+    #[test]
+    fn validate_config_rejects_wrong_profile_size() {
+        let mut cfg = make_valid_config();
+        cfg.profiles = vec![vec![0u8; 256]];
+        assert!(validate_saved_config(&cfg).is_err());
+    }
+
+    #[test]
+    fn validate_config_rejects_invalid_debounce() {
+        let mut cfg = make_valid_config();
+        cfg.debounce = 0;
+        assert!(validate_saved_config(&cfg).is_err());
+
+        cfg.debounce = 20;
+        assert!(validate_saved_config(&cfg).is_err());
+    }
+
+    #[test]
+    fn validate_config_rejects_invalid_brightness() {
+        let mut cfg = make_valid_config();
+        cfg.led.brightness = 10;
+        assert!(validate_saved_config(&cfg).is_err());
+    }
+
+    #[test]
+    fn validate_config_rejects_too_many_fn_layers() {
+        let mut cfg = make_valid_config();
+        cfg.fn_layers = vec![vec![0u8; 512]; 10];
+        assert!(validate_saved_config(&cfg).is_err());
     }
 }

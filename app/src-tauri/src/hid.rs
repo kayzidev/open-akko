@@ -84,14 +84,33 @@ fn is_keyboard_collection_board(
 /// Report ID 0 must carry 64 feature bytes. HID global Push/Pop preserves
 /// the report shape; input and output items do not contribute to its size.
 fn has_settings_report(mut descriptor: &[u8]) -> bool {
+    const MAX_DESCRIPTOR_SIZE: usize = 4096;
+    const MAX_ITERATIONS: usize = 256;
+    const MAX_STACK_DEPTH: usize = 32;
+    const MAX_LONG_ITEM_LEN: usize = 255;
+
+    if descriptor.len() > MAX_DESCRIPTOR_SIZE {
+        return false;
+    }
+
     let (mut size, mut count, mut id) = (0u32, 0u32, 0u32);
     let mut stack = Vec::new();
     let mut bits = 0u64;
+    let mut iterations = 0;
+
     while let Some((&tag, rest)) = descriptor.split_first() {
+        iterations += 1;
+        if iterations > MAX_ITERATIONS {
+            return false;
+        }
+
         if tag == 0xfe {
             let Some((&len, rest)) = rest.split_first() else {
                 return false;
             };
+            if usize::from(len) > MAX_LONG_ITEM_LEN {
+                return false;
+            }
             let Some(rest) = rest.get(1 + usize::from(len)..) else {
                 return false;
             };
@@ -110,7 +129,12 @@ fn has_settings_report(mut descriptor: &[u8]) -> bool {
             0x74 => size = value,
             0x94 => count = value,
             0x84 => id = value,
-            0xa4 => stack.push((size, count, id)),
+            0xa4 => {
+                if stack.len() >= MAX_STACK_DEPTH {
+                    return false;
+                }
+                stack.push((size, count, id));
+            }
             0xb4 => {
                 let Some(saved) = stack.pop() else {
                     return false;
@@ -508,6 +532,37 @@ mod tests {
         assert!(!has_settings_report(&decode("75089503b102")));
         assert!(has_settings_report(&decode("75089540a4850595038102b4b102")));
         assert!(!has_settings_report(&decode("75089540b10275")));
+    }
+
+    #[test]
+    fn hid_parsing_rejects_oversized_descriptors() {
+        let huge = vec![0u8; 5000];
+        assert!(!has_settings_report(&huge));
+    }
+
+    #[test]
+    fn hid_parsing_rejects_excessive_iterations() {
+        let mut malicious = Vec::new();
+        for _ in 0..300 {
+            malicious.push(0x74);
+            malicious.push(0x08);
+        }
+        assert!(!has_settings_report(&malicious));
+    }
+
+    #[test]
+    fn hid_parsing_rejects_deep_stacks() {
+        let mut deep = Vec::new();
+        for _ in 0..40 {
+            deep.extend_from_slice(&[0xa4, 0x00, 0x00, 0x00, 0x00]);
+        }
+        assert!(!has_settings_report(&deep));
+    }
+
+    #[test]
+    fn hid_parsing_rejects_oversized_long_items() {
+        let bad = vec![0xfe, 255, 1];
+        assert!(!has_settings_report(&bad));
     }
 
     /// Only a stalled endpoint drops the handle and asks for a replug.
