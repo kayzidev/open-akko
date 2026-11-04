@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { useEffect, useState } from "react";
-import { AudioLines, Keyboard, Minus, Square, Copy, X } from "lucide-react";
+import { AudioLines, Minus, Square, Copy, X } from "lucide-react";
+import OpenAkkoLogo from "@/components/OpenAkkoLogo";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { BUILD } from "@/lib/backend";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export default function Titlebar({ model, audio, onAudio }: { model: string; aud
       if (BUILD !== "app" || e.button !== 0) return;
       void action(() => e.detail === 2 ? getCurrentWindow().toggleMaximize() : getCurrentWindow().startDragging());
     }}>
-      <Keyboard className="pointer-events-none size-4 text-primary" />
+      <OpenAkkoLogo size={30} />
       <span className="pointer-events-none text-sm font-semibold tracking-tight">Open Akko</span>
       <span className="pointer-events-none ml-2 text-xs text-muted-foreground">{model}</span>
     </div>

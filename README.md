@@ -1,5 +1,7 @@
 # Open Akko
 
+<p align="center"><img src="assets/open-akko.png" width="160" alt="Open Akko : chat siamois et clavier séparés en diagonale"></p>
+
 Configuration des claviers AKKO sous Windows et Linux : éclairage, couleurs par touche, affectations, macros et effets audio selon les capacités du modèle.
 
 [Téléchargements](https://github.com/kayzidev/open-akko/releases/latest) · [Signaler un problème](https://github.com/kayzidev/open-akko/issues) · [Profils de claviers](docs/MULTI-KEYBOARDS-WINDOWS.md)

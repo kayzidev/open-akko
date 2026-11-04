@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: JR Lanteigne <root@dnim.dev>
 // SPDX-License-Identifier: GPL-3.0-or-later
-import SharkfinLogo from "@/components/SharkfinLogo";
+import OpenAkkoLogo from "@/components/OpenAkkoLogo";
 
 // Something to look at while the board answers. By cable a page loads in
 // well under a second; through the 2.4 GHz receiver every exchange waits on
@@ -13,7 +13,7 @@ export default function Waiting({ label }: { label: string }) {
       aria-live="polite"
     >
       <span className="fin-swim text-(--key-accent)">
-        <SharkfinLogo size={40} />
+        <OpenAkkoLogo size={40} />
       </span>
       <span className="text-sm">{label}</span>
     </div>

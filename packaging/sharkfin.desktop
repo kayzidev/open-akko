@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 [Desktop Entry]
 Type=Application
-Name=sharkfin
+Name=Open Akko
 GenericName=Keyboard configurator
 Comment=Remap keys, set the RGB and record macros on Attack Shark keyboards
 Exec=sharkfin

@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { Check, Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import SharkfinLogo from "@/components/SharkfinLogo";
+import OpenAkkoLogo from "@/components/OpenAkkoLogo";
 
 const RELEASES = "https://github.com/kayzidev/open-akko/releases";
 
@@ -92,7 +92,7 @@ export default function Unsupported() {
       <main className="w-full max-w-xl space-y-6">
         <div className="flex items-center gap-3">
           <span className="text-primary">
-            <SharkfinLogo size={32} />
+            <OpenAkkoLogo size={32} />
           </span>
           <span className="font-mono text-xl font-bold">sharkfin</span>
         </div>
