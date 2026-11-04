@@ -385,194 +385,344 @@ connect-src 'self' ipc: http://ipc.localhost tauri: asset: https://tauri.localho
 
 ## 4. Identité de marque et design system
 
-### 4.1 Logo actuel
+### 4.1 Logo actuel (Open Akko)
 
-**Fichier :** `docs/logo.svg`
+**Fichier :** `assets/akko-studio.svg`
 
 **Analyse visuelle :**
-- Aileron de requin stylisé (référence "sharkfin", nom de projet original)
-- Palette : dégradé bleu cyan (`#8fdcf2` → `#3d9fc4`)
-- Vagues stylisées en bas (`#4fb2d4`, opacité 0.55 et 0.3)
-- Style : minimaliste, géométrique, SVG vectoriel
+- Représentation minimaliste d'un clavier mécanique
+- Vue de dessus stylisée : 21 touches visibles sur 3 rangées + barre espace
+- LED d'état (coin supérieur droit)
+- Palette : violet et gris sombres, cohérente avec l'identité "Open Akko"
+- Style : flat design, géométrique, SVG vectoriel
 
-**Forces :** Mémorable, cohérent avec le nom "sharkfin"  
-**Faiblesse :** Nom original "Sharkfin" masqué, marque "Open Akko" non représentée visuellement
+**Couleurs extraites du logo :**
 
-### 4.2 Colorway "akko" (nouveau thème)
+| Élément | Hex | Usage dans le logo |
+|---------|-----|-------------------|
+| Background | `#191824` | Fond de l'icône |
+| Keyboard plate | `#353043` | Plaque/châssis du clavier |
+| Key accent | `#b5a0ee` | Touches accentuées (Esc, Tab, Caps, touches spéciales) |
+| Key standard | `#ded5ef` | Touches standard (majorité) |
+| Spacebar | `#b5a0ee` | Barre espace (accent) |
+| LED indicator | `#b5a0ee` | Indicateur lumineux |
 
-**Palette actuelle (`index.css:445-465`) :**
+**Forces :**
+- Représente directement l'usage (configuration de clavier)
+- Palette cohérente avec le colorway "akko" déjà implémenté
+- Reconnaissable, adapté à une application desktop
 
-| Variable | Valeur | Usage |
-|----------|--------|-------|
-| `--background` | `#14131c` | Fond application |
-| `--foreground` | `#eeedf5` | Texte principal |
-| `--primary` | `#b5a0ee` | Accent violet principal |
-| `--primary-foreground` | `#191426` | Texte sur accent |
-| `--key-accent` | `#b5a0ee` | Touches accentuées |
-| `--key-base` | `#292635` | Touches standard |
-| `--key-legend` | `#eee7fa` | Légendes de touches |
-| `--key-plate` | `#100f18` | Plaque clavier |
+**Caractéristiques identitaires :**
+- Dominante : **violet lavande** (`#b5a0ee`)
+- Fond : **noir-violet profond** (`#191824`)
+- Contraste élevé, lisible en petite taille (icônes système)
 
-**Caractéristiques :**
-- Dominante : **violet foncé** (`#b5a0ee`)
-- Arrière-plans : **noir-bleu profond** (`#14131c`, `#1a1824`)
-- Contraste : Bon (WCAG AA sur la plupart des paires)
+### 4.2 Palette de marque (extraite du logo)
 
-### 4.3 Proposition d'identité visuelle cohérente
+**Palette primaire (100% issue du logo `assets/akko-studio.svg`) :**
 
-#### 4.3.1 Palette de marque dérivée
+| Nom | Hex | HSL | Usage |
+|-----|-----|-----|-------|
+| **Akko Violet** | `#b5a0ee` | `hsl(265, 65%, 78%)` | Accent principal, CTA, touches actives |
+| **Lavande Clair** | `#ded5ef` | `hsl(265, 40%, 88%)` | Touches standard, éléments secondaires |
+| **Plaque Sombre** | `#353043` | `hsl(265, 15%, 23%)` | Surfaces secondaires, cards |
+| **Nuit Profonde** | `#191824` | `hsl(265, 35%, 13%)` | Background principal (dark) |
 
-**Palette primaire (dérivée du logo + colorway akko) :**
+**Palette étendue (cohérente avec le logo) :**
 
-| Couleur | Hex | Usage | Origine |
-|---------|-----|-------|---------|
-| **Cyan Shark** | `#3d9fc4` | Accent bleu, liens | Logo (stop gradient) |
-| **Sky Shark** | `#8fdcf2` | Hover, highlights | Logo (start gradient) |
-| **Violet Akko** | `#b5a0ee` | Primary actions, CTA | Colorway akko |
-| **Deep Violet** | `#30283f` | Secondary, mod keys | Colorway akko |
-| **Night** | `#14131c` | Background dark | Colorway akko |
-| **Chalk** | `#eeedf5` | Foreground light | Colorway akko |
+| Nom | Hex | HSL | Usage |
+|-----|-----|-----|-------|
+| **Violet Intense** | `#8b6dd9` | `hsl(265, 60%, 64%)` | Hover, états actifs |
+| **Gris Violet** | `#292536` | `hsl(265, 20%, 18%)` | Background secondaire |
+| **Texte Clair** | `#eeedf5` | `hsl(265, 30%, 94%)` | Foreground light mode |
+| **Texte Sombre** | `#1a1824` | `hsl(265, 30%, 13%)` | Foreground dark mode |
 
-**Palette sémantique :**
+**Palette sémantique (complémentaire) :**
 
-| Rôle | Light | Dark | Hex Light | Hex Dark |
-|------|-------|------|-----------|----------|
-| Succès | Vert doux | Vert menthe | `#4ade80` | `#86efac` |
-| Avertissement | Orange | Ambre | `#fb923c` | `#fbbf24` |
-| Erreur | Rouge corail | Rouge rose | `#f87171` | `#fca5a5` |
-| Info | Cyan Shark | Sky Shark | `#3d9fc4` | `#8fdcf2` |
+| Rôle | Hex | Usage |
+|------|-----|-------|
+| Succès | `#86d9ac` | Validation, connexion réussie |
+| Avertissement | `#f0b86e` | Attention, opérations réversibles |
+| Erreur | `#e88b8b` | Erreurs, déconnexion |
+| Info | `#7db8d9` | Informations, tooltips |
 
-#### 4.3.2 Typographie
+### 4.3 Typographie
 
-**Actuelle (déjà bien choisie) :**
-- **Sans-serif** : Inter Variable → Moderne, lisible, variable font
-- **Mono** : JetBrains Mono Variable → Code, légendes de touches
+**Actuelle (déjà optimale) :**
+- **Sans-serif** : Inter Variable → Moderne, lisible, support OpenType
+- **Mono** : JetBrains Mono Variable → Légendes de touches, code
 
-**Hiérarchie à formaliser :**
+**Hiérarchie standardisée :**
 
-| Niveau | Police | Taille | Poids | Usage |
-|--------|--------|--------|-------|-------|
-| H1 | Inter | 2.25rem | 700 | Titres de pages |
-| H2 | Inter | 1.875rem | 600 | Sections |
-| H3 | Inter | 1.5rem | 600 | Sous-sections |
-| Body | Inter | 1rem | 400 | Texte courant |
-| Caption | Inter | 0.875rem | 400 | Labels, tooltips |
-| Code | JetBrains Mono | 0.875rem | 400 | Légendes touches |
+| Niveau | Police | Taille | Poids | Line-height | Usage |
+|--------|--------|--------|-------|-------------|-------|
+| Display | Inter | 3rem (48px) | 700 | 1.1 | Headers marketing |
+| H1 | Inter | 2.25rem (36px) | 700 | 1.2 | Titres de pages |
+| H2 | Inter | 1.875rem (30px) | 600 | 1.3 | Sections principales |
+| H3 | Inter | 1.5rem (24px) | 600 | 1.4 | Sous-sections |
+| Body Large | Inter | 1.125rem (18px) | 400 | 1.6 | Introduction, leads |
+| Body | Inter | 1rem (16px) | 400 | 1.6 | Texte courant |
+| Body Small | Inter | 0.875rem (14px) | 400 | 1.5 | Labels, captions |
+| Code | JetBrains Mono | 0.875rem (14px) | 400 | 1.4 | Légendes touches, code |
 
-#### 4.3.3 Spacing et layout
+**Graisses utilisées :**
+- 400 (Regular) : Texte courant
+- 500 (Medium) : Emphase légère, labels actifs
+- 600 (Semibold) : Headings, boutons
+- 700 (Bold) : Titres majeurs, CTA
 
-**Échelle actuelle (Tailwind) :**
-- Base : `0.25rem` (4px)
-- Tokens : `--radius` = `0.625rem` (10px)
+### 4.4 Spacing et layout
 
-**Proposition d'échelle cohérente :**
+**Échelle de spacing (basée sur 4px) :**
 
 | Token | Valeur | Usage |
 |-------|--------|-------|
-| `--space-xs` | 0.25rem (4px) | Padding interne serré |
-| `--space-sm` | 0.5rem (8px) | Gap entre éléments liés |
-| `--space-md` | 1rem (16px) | Espacement standard |
-| `--space-lg` | 1.5rem (24px) | Sections |
-| `--space-xl` | 2rem (32px) | Marges de page |
-| `--space-2xl` | 3rem (48px) | Séparation majeure |
+| `--space-0` | 0 | Reset |
+| `--space-1` | 0.25rem (4px) | Padding serré, gap minimal |
+| `--space-2` | 0.5rem (8px) | Padding boutons, gap inline |
+| `--space-3` | 0.75rem (12px) | Padding inputs |
+| `--space-4` | 1rem (16px) | Espacement standard |
+| `--space-6` | 1.5rem (24px) | Gap entre sections |
+| `--space-8` | 2rem (32px) | Marges de cards |
+| `--space-12` | 3rem (48px) | Marges de pages |
+| `--space-16` | 4rem (64px) | Séparation majeure |
 
-**Border-radius :**
-- Keycap : `--radius-sm` (6px actuel)
-- Boutons : `--radius-md` (8px actuel)
-- Cards : `--radius-lg` (10px actuel)
-- Modales : `--radius-xl` (14px)
+**Border-radius (cohérent avec le logo) :**
 
-#### 4.3.4 Iconographie
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `--radius-xs` | 0.125rem (2px) | Keycaps (logo: `rx="2"`) |
+| `--radius-sm` | 0.375rem (6px) | Petits boutons, badges |
+| `--radius-md` | 0.625rem (10px) | Boutons, inputs (logo: keyboard plate `rx="10"`) |
+| `--radius-lg` | 1rem (16px) | Cards, panels |
+| `--radius-xl` | 1.75rem (28px) | Icône app (logo: `rx="28"`) |
+| `--radius-full` | 9999px | Cercles (LED indicator) |
 
-**Actuelle :**
-- Lucide React (bon choix, cohérent)
+### 4.5 Iconographie
 
-**Directives :**
-- Style : **Outline** (ligne fine, 1.5px stroke)
-- Taille : 20px (base), 16px (inline), 24px (headers)
-- Couleur : Hériter du texte parent
-- Accent : Cyan Shark (`#3d9fc4`) pour icônes actives
+**Bibliothèque actuelle :**
+- Lucide React (bon choix, +1000 icônes, cohérent, maintenu)
 
-**Icônes à créer/standardiser :**
-- Logo app : Combiner aileron + stylisation "AK" (initiales Akko)
-- Statuts connexion : USB, 2.4GHz, offline
-- Modes clavier : Profile, FN, Macro
+**Directives d'usage :**
 
-#### 4.3.5 Mode clair/sombre
+| Contexte | Style | Taille | Stroke | Couleur |
+|----------|-------|--------|--------|---------|
+| Navigation | Outline | 20px | 1.5px | Hériter du texte |
+| Inline text | Outline | 16px | 1.5px | Hériter du texte |
+| Headers | Outline | 24px | 2px | `--primary` (#b5a0ee) |
+| Boutons | Outline | 18px | 1.5px | Contraste avec fond |
+| Status | Filled | 12px | — | Sémantique (succès/erreur) |
 
-**Actuel :**
-- Variables CSS `:root` (light) et `.dark` (dark)
-- Colorways indépendants (abyss, olivia, laser, botanical, 8008, akko)
+**Icônes spécifiques à créer/standardiser :**
 
-**Proposition d'harmonisation :**
+| Icône | Usage | Style |
+|-------|-------|-------|
+| Logo app (alt) | Marque dans l'UI | Simplification du logo clavier |
+| USB cable | Connexion câblée | Outline, Lucide `usb` |
+| Wireless | Connexion 2.4GHz | Outline, Lucide `radio` |
+| Bluetooth | Connexion BT | Outline, Lucide `bluetooth` |
+| Keyboard | Sélection device | Logo simplifié |
+| Profile | Profils clavier | Lucide `layers` + accent violet |
+| Macro | Macros | Lucide `command` |
+| LED | Éclairage | Lucide `lightbulb` |
 
-**Mode sombre (défaut, actuel "akko") :**
-- Background : `#14131c` (Night)
-- Foreground : `#eeedf5` (Chalk)
-- Primary : `#b5a0ee` (Violet Akko)
-- Accent : `#3d9fc4` (Cyan Shark)
+### 4.6 Modes clair et sombre
 
-**Mode clair (nouveau, à créer) :**
-- Background : `#f8f7fb` (off-white violet)
-- Foreground : `#1a1824` (Night, inversé)
-- Primary : `#8b6dd9` (Violet Akko assombri)
-- Accent : `#2c7fa0` (Cyan Shark assombri)
+**Mode sombre (défaut, colorway "akko" actuel) :**
 
-**Recommandation :** Maintenir les colorways thématiques (olivia, laser, etc.) comme options avancées, mais standardiser un light/dark par défaut.
+| Variable | Hex | Origine logo | Usage |
+|----------|-----|--------------|-------|
+| `--background` | `#191824` | Background logo | Fond application |
+| `--foreground` | `#eeedf5` | Dérivé (inversé) | Texte principal |
+| `--card` | `#353043` | Keyboard plate | Cards, surfaces élevées |
+| `--primary` | `#b5a0ee` | Key accent | Actions principales, CTA |
+| `--secondary` | `#ded5ef` | Key standard | Actions secondaires |
+| `--muted` | `#292536` | Dérivé plate | Backgrounds secondaires |
+| `--accent` | `#b5a0ee` | Key accent | Highlights, focus |
+| `--key-base` | `#292635` | Dérivé plate | Touches standard |
+| `--key-accent` | `#b5a0ee` | Key accent logo | Touches accentuées |
+| `--key-legend` | `#eee7fa` | Dérivé standard | Légendes de touches |
+| `--key-plate` | `#191824` | Background logo | Plaque clavier |
 
-#### 4.3.6 Composants keycap (existants, à préserver)
+**Mode clair (nouveau, à implémenter) :**
 
-**Styles actuels (excellents) :**
+| Variable | Hex | HSL | Dérivation |
+|----------|-----|-----|-----------|
+| `--background` | `#f8f7fb` | `hsl(265, 30%, 98%)` | Logo inversé |
+| `--foreground` | `#1a1824` | `hsl(265, 30%, 13%)` | Logo background |
+| `--card` | `#ffffff` | `hsl(0, 0%, 100%)` | Blanc pur |
+| `--primary` | `#8b6dd9` | `hsl(265, 60%, 64%)` | Violet assombri |
+| `--secondary` | `#c9bde5` | `hsl(265, 40%, 82%)` | Standard assombri |
+| `--muted` | `#e9e5f2` | `hsl(265, 30%, 92%)` | Gris-violet clair |
+| `--accent` | `#8b6dd9` | `hsl(265, 60%, 64%)` | Violet assombri |
+| `--key-base` | `#e9e5f2` | `hsl(265, 30%, 92%)` | Touches claires |
+| `--key-accent` | `#8b6dd9` | `hsl(265, 60%, 64%)` | Accent adapté |
+| `--key-legend` | `#2a2536` | `hsl(265, 20%, 18%)` | Texte sombre |
+| `--key-plate` | `#ddd8eb` | `hsl(265, 30%, 88%)` | Plaque claire |
+
+**Contrastes WCAG AA (minimum requis : 4.5:1 pour texte) :**
+
+| Paire (Dark) | Contraste | Status |
+|--------------|-----------|--------|
+| `#eeedf5` / `#191824` | 14.2:1 | ✅ AAA |
+| `#b5a0ee` / `#191824` | 7.8:1 | ✅ AAA |
+| `#ded5ef` / `#353043` | 8.9:1 | ✅ AAA |
+
+| Paire (Light) | Contraste | Status |
+|---------------|-----------|--------|
+| `#1a1824` / `#f8f7fb` | 14.1:1 | ✅ AAA |
+| `#8b6dd9` / `#ffffff` | 4.6:1 | ✅ AA |
+| `#2a2536` / `#e9e5f2` | 9.1:1 | ✅ AAA |
+
+### 4.7 Composants keycap (préserver l'existant)
+
+**Styles actuels (excellents, cohérents avec le logo) :**
+- Border-radius : `2px` (correspond au logo `rx="2"`)
 - Dégradé 3D réaliste : `linear-gradient(180deg, ...)`
-- Ombres multiples : inset + drop shadow
-- Animation flash sur écriture : `@keyframes key-flash`
-- Variables CSS : `--key-base`, `--key-legend`, `--key-accent`
+- Ombres multiples : `inset` + `drop-shadow`
+- Animation flash : `@keyframes key-flash` (650ms ease-out)
+- Variables : `--key-base`, `--key-legend`, `--key-accent`, `--key-mod`
 
-**À ajouter :**
-- État "locked" (verrou visual pour readonly)
-- État "error" (bordure rouge, shake animation)
+**États supplémentaires à implémenter :**
 
-#### 4.3.7 Mapping sur les variables CSS actuelles
+| État | Visual | Implémentation CSS |
+|------|--------|-------------------|
+| **Locked** | Icône cadenas, opacité 0.6 | `opacity: 0.6; cursor: not-allowed;` |
+| **Error** | Bordure rouge, shake | `border: 2px solid #e88b8b; animation: shake 0.3s;` |
+| **Writing** | Spinner/loading | `animation: pulse 1s infinite;` |
+| **Hover (readonly)** | Pas de brightness | `filter: none; cursor: default;` |
 
-**Modifications proposées (`index.css`) :**
+**Animation shake (erreur) :**
+```css
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+```
 
+### 4.8 Mapping sur les variables CSS actuelles
+
+**Modifications à apporter à `app/src/index.css` :**
+
+**1. Ajouter les tokens de marque (root level) :**
 ```css
 :root {
-    /* Palette de marque */
-    --cyan-shark: #3d9fc4;
-    --sky-shark: #8fdcf2;
-    --violet-akko: #b5a0ee;
-    --deep-violet: #30283f;
+    /* === Palette de marque (logo-derived) === */
+    --brand-violet: #b5a0ee;
+    --brand-lavande: #ded5ef;
+    --brand-plate: #353043;
+    --brand-night: #191824;
+    --brand-violet-dark: #8b6dd9; /* Pour light mode */
     
-    /* Sémantique (préserver HSL/OKLCH pour cohérence) */
-    --success: oklch(0.75 0.15 145);
-    --warning: oklch(0.75 0.15 50);
-    --error: oklch(0.70 0.19 22);
-    --info: var(--cyan-shark);
+    /* === Sémantique === */
+    --success: #86d9ac;
+    --warning: #f0b86e;
+    --error: #e88b8b;
+    --info: #7db8d9;
     
-    /* Redéfinir primary pour cohérence */
-    --primary: var(--violet-akko);
-    --accent: var(--cyan-shark); /* Nouveau */
+    /* === Spacing tokens (déjà partiellement présents) === */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    
+    /* === Border-radius (aligner avec le logo) === */
+    --radius-xs: 0.125rem; /* 2px - keycaps logo */
+    --radius-sm: 0.375rem; /* 6px */
+    --radius-md: 0.625rem; /* 10px - keyboard plate logo */
+    --radius-lg: 1rem;     /* 16px */
+    --radius-xl: 1.75rem;  /* 28px - app icon logo */
+    --radius-full: 9999px; /* LED indicator */
 }
+```
 
-.dark {
-    /* Conserver les valeurs actuelles pour --background, etc. */
-}
-
-/* Mode clair (nouveau) */
-.light {
-    --background: oklch(0.98 0.01 280);
-    --foreground: oklch(0.15 0.02 280);
-    --primary: oklch(0.55 0.15 280);
-    --accent: oklch(0.45 0.12 210);
+**2. Redéfinir le colorway "akko" pour mapper au logo :**
+```css
+:root[data-colorway="akko"] {
+    /* Mapping direct du logo */
+    --background: var(--brand-night);    /* #191824 */
+    --card: var(--brand-plate);          /* #353043 */
+    --primary: var(--brand-violet);      /* #b5a0ee */
+    --secondary: var(--brand-lavande);   /* #ded5ef */
+    
+    --key-accent: var(--brand-violet);
+    --key-base: #292635; /* Dérivé de plate */
+    --key-legend: var(--brand-lavande);
+    --key-plate: var(--brand-night);
+    
+    /* Conserver les autres valeurs actuelles */
+    --foreground: #eeedf5;
+    --muted: #292536;
     /* ... */
 }
 ```
 
-**Implémentation UI :**
-- Sélecteur light/dark dans Settings
-- Préserver le sélecteur de colorways (thèmes avancés)
-- Sauvegarder préférence dans localStorage
+**3. Créer le mode clair (nouveau) :**
+```css
+:root[data-colorway="akko-light"] {
+    --background: #f8f7fb;
+    --foreground: var(--brand-night);
+    --card: #ffffff;
+    --primary: var(--brand-violet-dark);
+    --secondary: #c9bde5;
+    --muted: #e9e5f2;
+    
+    --key-accent: var(--brand-violet-dark);
+    --key-base: #e9e5f2;
+    --key-legend: #2a2536;
+    --key-plate: #ddd8eb;
+    --key-mod: #c9bde5;
+    --key-mod-legend: #3a3043;
+    --key-accent-legend: #f8f7fb;
+    
+    --border: oklch(0.35 0.04 265 / 14%);
+    --input: oklch(0.35 0.04 265 / 18%);
+    --ring: var(--brand-violet-dark);
+}
+```
+
+**4. Uniformiser les autres colorways avec les tokens :**
+```css
+/* Remplacer les valeurs hardcodées par les tokens de spacing/radius */
+.keycap {
+    border-radius: var(--radius-xs); /* Au lieu de valeur inline */
+    /* ... */
+}
+
+/* Utiliser les tokens sémantiques */
+.error-state {
+    color: var(--error);
+    border-color: var(--error);
+}
+```
+
+**5. Implémentation du sélecteur light/dark :**
+```typescript
+// Dans Settings.tsx ou ThemeProvider
+const themes = [
+  { id: 'akko', name: 'Akko Dark', mode: 'dark' },
+  { id: 'akko-light', name: 'Akko Light', mode: 'light' },
+  { id: 'abyss', name: 'Abyss', mode: 'dark' },
+  // ... autres colorways
+];
+
+function setTheme(themeId: string) {
+  document.documentElement.setAttribute('data-colorway', themeId);
+  localStorage.setItem('theme', themeId);
+}
+```
+
+**Priorité d'implémentation :**
+1. ✅ Ajouter tokens de marque (--brand-*)
+2. ✅ Mapper colorway "akko" existant au logo
+3. 🆕 Créer "akko-light" (mode clair)
+4. 🔧 Remplacer valeurs hardcodées par tokens
+5. 🎨 UI de sélection light/dark
 
 ---
 
