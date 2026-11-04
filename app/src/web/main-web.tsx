@@ -3,6 +3,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "../App";
+import AudioProvider from "@/components/AudioProvider";
 import ConnectGate from "./ConnectGate";
 import Unsupported from "./Unsupported";
 import * as backend from "./backend";
@@ -60,10 +61,10 @@ const usable = backend.hidAvailable();
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     {usable ? (
-      <>
+      <AudioProvider>
         <App />
         <ConnectGate />
-      </>
+      </AudioProvider>
     ) : (
       <Unsupported />
     )}
