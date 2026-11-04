@@ -280,7 +280,9 @@ impl Session {
                     if result.is_ok() {
                         status.lock().config = Some(next);
                     }
-                    let _ = reply.send(result);
+                    if reply.send(result).is_err() {
+                        log::warn!("Audio configuration reply channel closed");
+                    }
                 }
                 let output = inputs.output.as_ref().map(Track::sample);
                 let mic = inputs.microphone.as_ref().map(Track::sample);
