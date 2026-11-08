@@ -16,26 +16,44 @@ from urllib.parse import quote
 ROOT = Path(__file__).resolve().parent.parent
 REPOSITORY = "kayzidev/open-akko"
 PLATFORMS = {"linux": ("linux-x86_64", "AppImage", "appimage"), "windows": ("windows-x86_64", "exe", "nsis")}
+VERSION = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
 
 
 def version(value):
-    if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", value):
+    if not VERSION.fullmatch(value):
         raise ValueError("Expected a stable major.minor.patch version")
     return value
 
 
+def stable_tags(tags):
+    for tag in tags:
+        if tag.startswith("v") and (match := VERSION.fullmatch(tag[1:])):
+            yield tuple(map(int, match.groups())), tag
+
+
 def latest_flag(release_version, published_tags):
     candidate = tuple(map(int, version(release_version).split(".")))
-    for tag in published_tags:
-        if not tag.startswith("v"):
-            continue
-        try:
-            published = tuple(map(int, version(tag[1:]).split(".")))
-        except ValueError:
-            continue
-        if published >= candidate:
-            return "--latest=false"
+    if any(published >= candidate for published, _ in stable_tags(published_tags)):
+        return "--latest=false"
     return "--latest"
+
+
+def release_notes(release_version, root=ROOT):
+    candidate = tuple(map(int, version(release_version).split(".")))
+
+    def git(*args):
+        return subprocess.check_output(["git", *args], cwd=root, encoding="utf-8")
+
+    tags = git("tag", "--merged", "HEAD").splitlines()
+    previous = max((entry for entry in stable_tags(tags) if entry[0] < candidate), default=None)
+    commits = f"{previous[1]}..HEAD" if previous else "HEAD"
+    subjects = git("log", "--no-merges", "--max-count=25", "--format=%s", commits).splitlines()
+    path = ".github/release-notes.md"
+    notes = git("show", f"HEAD:{path}").rstrip()
+    if subjects:
+        notes += f"\n\n## Changements de la version {release_version}\n\n"
+        notes += "\n".join(f"- {subject}" for subject in subjects)
+    (root / path).write_text(notes + "\n", encoding="utf-8")
 
 
 def repository(value):
@@ -192,6 +210,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("validate")
+    p = sub.add_parser("notes")
+    p.add_argument("--version", required=True)
     p = sub.add_parser("version")
     p.add_argument("--run-number", type=int, required=True)
     p.add_argument("--repository", required=True)
@@ -207,6 +227,7 @@ def main():
         if command == "publish": p.add_argument("--commit", required=True)
     args = parser.parse_args()
     if args.command == "validate": print(f"Release configuration OK: {validate()}")
+    elif args.command == "notes": release_notes(args.version)
     elif args.command == "version":
         repository(args.repository)
         value = numbered_version(args.run_number)

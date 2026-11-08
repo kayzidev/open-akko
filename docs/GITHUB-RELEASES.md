@@ -20,7 +20,7 @@ Conservez une sauvegarde de la clé privée hors du dépôt. Les clients déjà 
 
 | Étape | Résultat |
 | --- | --- |
-| Pull request | Tests Linux et Windows, sans accès à la clé de publication |
+| Pull request | Contrôles Linux et Windows obligatoires sur une branche à jour avec `main`, sans clé de publication |
 | Fusion ou push dans `main` | Nouvelle exécution de `Publish clients` |
 | Contrôles réussis | Version calculée puis deux compilations signées |
 | Deux paquets disponibles | Vérification des signatures avec la clé publique du client |
@@ -30,6 +30,8 @@ Conservez une sauvegarde de la clé privée hors du dépôt. Les clients déjà 
 | Acceptation | Téléchargement, contrôle de signature, attente des opérations USB, arrêt audio et installation |
 
 Les tags ne déclenchent pas de publication. Une fusion dans `main`, un push dans `main` ou un lancement manuel sur `main` déclenche les contrôles. GitHub conserve jusqu’à 100 publications en attente dans la file. Une compilation en échec ne publie pas une version partielle. Une release laissée en brouillon peut être complétée en relançant la même exécution. Une version ancienne publiée après une relance ne devient pas la version proposée aux clients.
+
+La règle GitHub de `main` impose une pull request et les deux contrôles `checks (ubuntu-22.04)` et `checks (windows-latest)`. Le contrôle Linux vérifie les références d’actions et compile les types de la version web avant fusion. Les versions majeures des dépendances npm sont traitées ensemble dans des PR dédiées. Dependabot propose les mises à jour mineures, les correctifs et les mises à jour de sécurité.
 
 « Plus tard » reporte le rappel de cette version pendant 24 heures. Une nouvelle version différente est proposée sans attendre. Le bouton de recherche dans le panneau latéral permet de vérifier à tout moment. Une absence de réseau ne déclenche pas de fenêtre d’erreur lors des vérifications automatiques.
 

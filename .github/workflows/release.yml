@@ -104,24 +104,6 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
-      - name: Generate release notes
-        id: changelog
-        continue-on-error: true
-        uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
-        with:
-          config: cliff.toml
-          args: --unreleased --use-branch-tags --tag ${{ needs.version.outputs.tag }} --strip all
-        env:
-          OUTPUT: ${{ runner.temp }}/open-akko-changelog.md
-      - name: Append changes to release notes
-        if: steps.changelog.outcome == 'success'
-        env:
-          CHANGELOG: ${{ runner.temp }}/open-akko-changelog.md
-        run: |
-          if [ -s "$CHANGELOG" ]; then
-            printf '\n' >> .github/release-notes.md
-            cat "$CHANGELOG" >> .github/release-notes.md
-          fi
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
         with:
@@ -142,5 +124,6 @@ jobs:
           RELEASE_REPOSITORY: ${{ github.repository }}
           RELEASE_SHA: ${{ github.sha }}
         run: |
+          python tools/release.py notes --version "$RELEASE_VERSION"
           python tools/release.py manifest --version "$RELEASE_VERSION" --repository "$RELEASE_REPOSITORY"
           python tools/release.py publish --version "$RELEASE_VERSION" --repository "$RELEASE_REPOSITORY" --commit "$RELEASE_SHA"

@@ -16,10 +16,9 @@ updates:
     directory: "/app"
     schedule:
       interval: "weekly"
-    ignore:
-      - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
-        versions: [">=7.0.0"]
+    allow:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
     groups:
       npm-dependencies:
         patterns:
