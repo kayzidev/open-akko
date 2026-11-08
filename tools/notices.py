@@ -1,20 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: JR Lanteigne <root@dnim.dev>
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Generate THIRD-PARTY-NOTICES.md from what the binaries actually contain.
+"""Render the notices for the modules and assets reported by Vite on stdin."""
 
-Usage: tools/notices.py [--check]
-
-The web package list comes from the sourcemaps of a real build, not from
-package.json, so build-only tools are never listed and nothing that ships
-is missed. Run `npx vite build --sourcemap` in app/ first.
-
---check compares the committed inventory against a fresh one and fails on
-drift. It reads no license texts, so CI does not need the cargo registry
-sources.
-"""
-
-import argparse
 import json
 import re
 import subprocess
@@ -23,10 +11,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 APP = ROOT / "app"
-OUT = ROOT / "THIRD-PARTY-NOTICES.md"
+NODE_MODULES = APP / "node_modules"
 
-# Ship as generated CSS or assets, so they leave no trace in the JS
-# sourcemaps. Fonts are picked up from the woff2 files in dist/.
+# Ship as generated CSS, outside the JavaScript chunks.
 CSS_PACKAGES = ("tailwindcss", "tw-animate-css")
 
 # Copied into the tree rather than installed, so no sourcemap or manifest
@@ -47,7 +34,7 @@ LICENSE_ORDER = ("MIT", "Apache-2.0", "OFL-1.1", "BSD-3-Clause", "BSD-2-Clause",
 
 
 def run(cmd, cwd):
-    return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, check=True).stdout
+    return subprocess.run(cmd, cwd=cwd, stdout=subprocess.PIPE, encoding="utf-8", check=True).stdout
 
 
 def license_files(d: Path):
@@ -108,51 +95,44 @@ def ids(expr: str) -> list[str]:
     return out
 
 
-def web_packages() -> list[dict]:
-    """Packages whose code is in the built bundle, read off the sourcemaps."""
-    dist = APP / "dist" / "assets"
-    maps = sorted(dist.glob("*.map"))
-    if not maps:
-        sys.exit("no sourcemaps in app/dist/assets: run `npx vite build --sourcemap` in app/ first")
-    names = set()
-    for m in maps:
-        for src in json.loads(m.read_text()).get("sources") or []:
-            hit = re.search(r"node_modules/((?:@[^/]+/)?[^/]+)", src)
-            if hit:
-                names.add(hit.group(1))
-    names.update(CSS_PACKAGES)
+def web_packages(modules: list[str]) -> list[dict]:
+    """Packages whose code is in the built bundle, including nested copies."""
+    directories = {NODE_MODULES / name for name in CSS_PACKAGES}
+    for module in modules:
+        parents, _, relative = f"node_modules/{module}".rpartition("node_modules/")
+        parts = relative.split("/")
+        name = "/".join(parts[:2]) if parts[0].startswith("@") else parts[0]
+        directories.add(APP / f"{parents}node_modules/{name}")
     pkgs = []
-    for name in sorted(names):
-        d = APP / "node_modules" / name
+    for d in sorted(directories):
         meta_path = d / "package.json"
         if not meta_path.is_file():
-            sys.exit(f"{name} is in the bundle but not in app/node_modules: run npm ci")
-        meta = json.loads(meta_path.read_text())
+            sys.exit(f"Package metadata missing for {d}: run npm ci")
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
         lic = meta.get("license")
         if isinstance(lic, dict):
             lic = lic.get("type")
         if not lic and meta.get("licenses"):
             lic = " OR ".join(x.get("type", "") for x in meta["licenses"])
-        pkgs.append({"name": name, "version": meta.get("version", ""),
+        pkgs.append({"name": meta["name"], "version": meta["version"],
                      "license": lic or "see package", "dir": d})
-    return pkgs
+    return sorted(pkgs, key=lambda p: (p["name"], p["version"]))
 
 
-def fonts() -> list[dict]:
+def fonts(files: list[str]) -> list[dict]:
     """Fonts embedded in the web assets, with the attribution the OFL wants."""
-    dist = APP / "dist" / "assets"
     families = set()
-    for f in dist.glob("*.woff2"):
+    for f in (Path(name) for name in files if name.endswith(".woff2")):
         stem = re.sub(r"-[A-Za-z0-9_-]{8}$", "", f.stem)
         stem = re.sub(r"-(latin|cyrillic|greek|vietnamese)(-ext)?-.*$", "", stem)
         families.add(stem)
     out = []
     for fam in sorted(families):
-        d = APP / "node_modules" / f"@fontsource-variable/{fam}"
+        d = NODE_MODULES / f"@fontsource-variable/{fam}"
         if not d.is_dir():
             sys.exit(f"font {fam} is bundled but @fontsource-variable/{fam} is not installed")
-        meta = json.loads((d / "metadata.json").read_text())
-        pkg = json.loads((d / "package.json").read_text())
+        meta = json.loads((d / "metadata.json").read_text(encoding="utf-8"))
+        pkg = json.loads((d / "package.json").read_text(encoding="utf-8"))
         src = meta.get("license") or {}
         attr = re.sub(r"\s+", " ", src.get("attribution", "")).strip()
         # Upstream repeats the same holder once per face; keep the first grant.
@@ -167,7 +147,7 @@ def fonts() -> list[dict]:
 def rust_crates(manifest_dir: Path) -> list[dict]:
     """Crates linked into a binary: normal dependencies reachable from the
     root, with dev- and build-only crates left out."""
-    meta = json.loads(run(["cargo", "metadata", "--format-version", "1"], manifest_dir))
+    meta = json.loads(run(["cargo", "metadata", "--locked", "--format-version", "1"], manifest_dir))
     by_id = {p["id"]: p for p in meta["packages"]}
     nodes = {n["id"]: n for n in meta["resolve"]["nodes"]}
     roots = meta["workspace_members"]
@@ -197,14 +177,13 @@ def table(rows: list[dict]) -> list[str]:
     return out
 
 
-def inventory() -> dict:
-    web = web_packages()
-    fnt = fonts()
-    tauri = rust_crates(APP / "src-tauri")
-    wasm = rust_crates(APP / "src-web")
-    tauri_keys = {(c["name"], c["version"]) for c in tauri}
-    wasm = [c for c in wasm if (c["name"], c["version"]) not in tauri_keys]
-    return {"fonts": fnt, "web": web, "tauri": tauri, "wasm": wasm}
+def inventory(bundle: dict) -> dict:
+    target = "src-web" if bundle["web"] else "src-tauri"
+    return {
+        "fonts": fonts(bundle["files"]),
+        "web": web_packages(bundle["modules"]),
+        "rust": rust_crates(APP / target),
+    }
 
 
 def render(inv: dict) -> str:
@@ -233,18 +212,14 @@ def render(inv: dict) -> str:
               f"In `{v['where']}`", ""]
 
     L += ["## Rust crates", "",
-          "Linked into the application binary. The list spans every supported",
-          "platform, so some crates are present only on macOS, Windows or Linux.", ""]
-    L += table(inv["tauri"]) + [""]
-    if inv["wasm"]:
-        L += ["Additional crates in the browser build:", ""]
-        L += table(inv["wasm"]) + [""]
+          "The list includes target-specific dependencies for the supported platforms.", ""]
+    L += table(inv["rust"]) + [""]
 
     groups: dict[str, list[str]] = {}
     texts: dict[str, str] = {}
     for v in VENDORED:
         groups.setdefault(v["license"], []).append(v["holder"])
-    for entry in inv["fonts"] + inv["web"] + inv["tauri"] + inv["wasm"]:
+    for entry in inv["fonts"] + inv["web"] + inv["rust"]:
         for lid in ids(entry["license"]):
             groups.setdefault(lid, [])
             for c in copyrights(entry["dir"]):
@@ -273,46 +248,5 @@ def render(inv: dict) -> str:
     return "\n".join(L).rstrip() + "\n"
 
 
-def committed_inventory() -> set[tuple[str, str, str]]:
-    if not OUT.is_file():
-        sys.exit(f"{OUT.name} is missing: run tools/notices.py")
-    rows = set()
-    for line in OUT.read_text().splitlines():
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) == 3 and cells[0] not in ("Package", "---") and "---" not in cells[1]:
-            rows.add(tuple(cells))
-    for line in OUT.read_text().splitlines():
-        hit = re.match(r"\*\*.+\*\* \((\S+) (\S+)\), (\S+)", line)
-        if hit:
-            rows.add((hit.group(1), hit.group(2), hit.group(3)))
-    return rows
-
-
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--check", action="store_true",
-                    help="fail if the committed inventory is out of date")
-    args = ap.parse_args()
-    inv = inventory()
-    if args.check:
-        fresh = {(e["name"], e["version"], e["license"])
-                 for e in inv["fonts"] + inv["web"] + inv["tauri"] + inv["wasm"]}
-        have = committed_inventory()
-        added, dropped = sorted(fresh - have), sorted(have - fresh)
-        if added or dropped:
-            for n, v, l in added:
-                print(f"missing from {OUT.name}: {n} {v} ({l})")
-            for n, v, l in dropped:
-                print(f"no longer shipped: {n} {v} ({l})")
-            print(f"\nrun tools/notices.py to regenerate {OUT.name}")
-            return 1
-        print(f"{OUT.name} lists all {len(fresh)} redistributed components")
-        return 0
-    OUT.write_text(render(inv))
-    n = sum(len(inv[k]) for k in inv)
-    print(f"{OUT.relative_to(ROOT)}: {n} components")
-    return 0
-
-
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.stdout.buffer.write(render(inventory(json.load(sys.stdin.buffer))).encode("utf-8"))

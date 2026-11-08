@@ -92,7 +92,11 @@ def validate(root=ROOT):
     inputs = list(config.get("bundle", {}).get("resources", {}))
     for bundle in config.get("bundle", {}).get("linux", {}).values():
         inputs.extend(bundle.get("files", {}).values())
+    # The frontend build emits this notice before the bundler runs.
+    generated_notice = Path(config["build"]["frontendDist"]) / "THIRD-PARTY-NOTICES.md"
     for source in inputs:
+        if Path(source) == generated_notice:
+            continue
         if not (root / "app/src-tauri" / source).is_file():
             raise ValueError(f"Missing packaging input: {source}")
     return config["version"]

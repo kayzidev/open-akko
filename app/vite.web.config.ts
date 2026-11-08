@@ -10,7 +10,7 @@ import { licenseAssets } from "./vite-license-assets";
 import { layoutIndex } from "./vite-layout-index";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), licenseAssets(), layoutIndex()],
+  plugins: [react(), tailwindcss(), licenseAssets(true), layoutIndex()],
 
   resolve: {
     alias: [

@@ -97,6 +97,7 @@ sudo pacman -S pipewire pipewire-pulse
 
 - **Node.js** 18+ et npm
 - **Rust** 1.70+
+- **Python 3**
 - **Dépendances système** :
   - Linux : `webkit2gtk`, `libayatana-appindicator`, `udev`
   - Windows : Visual Studio Build Tools
@@ -127,7 +128,7 @@ Open Akko est distribué sous licence [GPL-3.0-or-later](LICENSE).
 
 Ce projet est un fork de [Sharkfin](https://github.com/dniminenn/sharkfin) créé par dniminenn et ses contributeurs. Toutes les notices d'attribution d'origine sont conservées.
 
-Les bibliothèques tierces et polices distribuées sont listées dans [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+Chaque paquet contient un fichier `THIRD-PARTY-NOTICES.md` qui liste ses bibliothèques et polices. Le [fichier du dépôt](THIRD-PARTY-NOTICES.md) contient les notices du code tiers inclus dans les sources.
 
 ---
 
