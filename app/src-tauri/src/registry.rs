@@ -507,6 +507,27 @@ mod tests {
         assert_eq!(side.to_packet_on(d.led_wire().swapped)[4] & 15, 8);
     }
 
+    /// 3151:4003, named from the label. Identify on interface 0 and a yc500
+    /// sweep are the evidence. Layout, controller and feature flags are the
+    /// unknown fallbacks. Writes have not been round-tripped.
+    #[test]
+    fn akko_5075b_plus_598_matches_the_labelled_board() {
+        let d = by_id(598).expect("5075B Plus 598 present");
+        assert_eq!(d.label(), "akko 5075B Plus");
+        assert_eq!((d.vendor_id, d.product_id), (0x3151, 0x4003));
+        assert_eq!(d.family, "yc500");
+        assert!(d.writes_supported());
+        assert_eq!(d.internal_name, "akko_5075b_plus");
+        assert_eq!(d.key_layout, "Unknown");
+        assert_eq!(d.profiles, 1);
+        assert!(d.features.knob.is_empty());
+        assert!(!d.features.debounce && !d.features.sleep24 && !d.features.sleep_bt);
+        assert!(!d.features.side_light && !d.features.screen && !d.magnetic);
+        assert!(!d.led_flags_swapped);
+        assert!(d.led_flags_source.is_empty());
+        assert!(!d.unregistered);
+    }
+
     #[test]
     fn akko_3098b_matches_the_hardware_report() {
         let d = by_id(69).expect("3098B present");

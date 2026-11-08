@@ -595,6 +595,32 @@
     "bulkKeymap": true
   },
   {
+    "id": 598,
+    "name": "akko_5075b_plus",
+    "displayName": "5075B Plus",
+    "company": "akko",
+    "vendor": "akko",
+    "vendorId": 12625,
+    "productId": 16387,
+    "internalName": "akko_5075b_plus",
+    "keyLayout": "Unknown",
+    "lightLayout": "",
+    "sideLightLayout": "",
+    "profiles": 1,
+    "magnetic": false,
+    "family": "yc500",
+    "features": {
+      "knob": [],
+      "debounce": false,
+      "sleep24": false,
+      "sleepBT": false,
+      "magneticSwitches": false,
+      "screen": false,
+      "sideLight": false
+    },
+    "screen": null
+  },
+  {
     "id": 600,
     "name": "yc300_r87",
     "displayName": "ROYALAXE R87",

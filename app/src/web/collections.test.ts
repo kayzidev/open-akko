@@ -7,6 +7,7 @@ import {
   KEYBOARD_COLLECTIONS,
   isSettingsCollection,
   requestFilters,
+  selectSettingsDevices,
 } from "./collections";
 
 const device = (
@@ -64,12 +65,36 @@ describe("settings collection", () => {
       usagePage: 1,
       usage: 6,
     });
-    expect(isSettingsCollection(device(0x3151, 0x4003, 1, 6), [0x3151])).toBe(
-      false,
-    );
     expect(isSettingsCollection(device(0x3151, 0x4002, 0xffff, 2), [0x3151])).toBe(
       true,
     );
+  });
+
+  it("accepts a 4003 keyboard collection only when it carries the settings report", () => {
+    expect(isSettingsCollection(device(0x3151, 0x4003, 1, 6), [0x3151])).toBe(
+      true,
+    );
+    const inputOnly = device(0x3151, 0x4003, 1, 6);
+    inputOnly.collections[0].featureReports = [];
+    expect(isSettingsCollection(inputOnly, [0x3151])).toBe(false);
+    expect(requestFilters([0x3151])).toContainEqual({
+      vendorId: 0x3151,
+      productId: 0x4003,
+      usagePage: 1,
+      usage: 6,
+    });
+  });
+
+  it("keeps the vendor collection when a shared id has both settings interfaces", () => {
+    const keyboard = device(0x3151, 0x4003, 1, 6);
+    const vendor = device(0x3151, 0x4003, 0xffff, 1);
+    expect(selectSettingsDevices([keyboard, vendor])).toEqual([vendor]);
+    expect(selectSettingsDevices([keyboard])).toEqual([keyboard]);
+    const other = device(0x3151, 0x5030, 0xffff, 2);
+    expect(selectSettingsDevices([keyboard, other])).toEqual([keyboard, other]);
+    const kbd4002 = device(0x3151, 0x4002, 1, 6);
+    const vendor4002 = device(0x3151, 0x4002, 0xffff, 2);
+    expect(selectSettingsDevices([kbd4002, vendor4002])).toEqual([vendor4002]);
   });
 
   it("rejects settings reports with the wrong ID or length", () => {

@@ -278,15 +278,14 @@ pub fn scan(state: tauri::State<AppState>) -> Result<ScanResult, String> {
         inner.travel = None;
     }
 
-    let found = {
-        let api = inner.api()?;
-        hid::discover(api)
-    };
-
     if inner.stalled {
-        // Reopen does not recover a stall; extra traffic pins it. Wait for
-        // the device to leave the bus (a replug).
-        if found.is_empty() {
+        // Reopen does not recover a stall; extra traffic pins it. Presence
+        // is a device list only. Wait for the board to leave the bus.
+        let present = {
+            let api = inner.api()?;
+            hid::board_present(api)
+        };
+        if !present {
             inner.stalled = false;
         } else {
             return Ok(ScanResult {
@@ -300,6 +299,11 @@ pub fn scan(state: tauri::State<AppState>) -> Result<ScanResult, String> {
             });
         }
     }
+
+    let found = {
+        let api = inner.api()?;
+        hid::discover(api)
+    };
 
     let mut unknown = Vec::new();
     let mut connected = None;

@@ -29,29 +29,111 @@ pub struct DiscoveredDevice {
     pub usage: u16,
 }
 
+/// A candidate is on the bus. Does not open anything: a stalled endpoint
+/// is pinned by extra traffic, and the scan uses this while it waits.
+pub(crate) fn board_present(api: &HidApi) -> bool {
+    !list_candidates(api).is_empty()
+}
+
 pub fn discover(api: &HidApi) -> Vec<DiscoveredDevice> {
-    api.device_list()
-        .filter(|d| {
-            (is_royuan_collection(d.usage_page(), d.usage())
-                && crate::registry::vendor_ids().contains(&d.vendor_id()))
-                || is_keyboard_collection_board(
-                    d.vendor_id(),
-                    d.product_id(),
-                    d.usage_page(),
-                    d.usage(),
-                    d.interface_number(),
-                    d.bus_type(),
-                )
-        })
-        .map(|d| DiscoveredDevice {
-            path: d.path().to_string_lossy().into_owned(),
-            vendor_id: d.vendor_id(),
-            product_id: d.product_id(),
-            product: d.product_string().unwrap_or_default().to_string(),
-            manufacturer: d.manufacturer_string().unwrap_or_default().to_string(),
-            usage: d.usage(),
+    let listed = list_candidates(api);
+
+    // 3151:4002 and 3151:4003: read each candidate's descriptor once, then
+    // keep a single interface per board. Other ids are not opened here.
+    let mut reports = std::collections::HashMap::<std::ffi::CString, Option<bool>>::new();
+    let mut hidden = vec![false; listed.len()];
+    let mut groups = std::collections::HashMap::<String, Vec<usize>>::new();
+    for (i, n) in listed.iter().enumerate() {
+        if shared_settings_id(n.vendor_id, n.product_id) {
+            groups
+                .entry(board_group(
+                    n.vendor_id,
+                    n.product_id,
+                    &n.serial,
+                    &n.path_text,
+                ))
+                .or_default()
+                .push(i);
+        }
+    }
+    for idxs in groups.values() {
+        let faces: Vec<SharedFace> = idxs
+            .iter()
+            .map(|&i| {
+                if listed[i].keyboard {
+                    SharedFace::Keyboard
+                } else {
+                    SharedFace::Vendor
+                }
+            })
+            .collect();
+        let probed: Vec<Option<bool>> = idxs
+            .iter()
+            .map(|&i| probe_settings(api, &listed[i].path, &mut reports))
+            .collect();
+        for (pos, &i) in idxs.iter().enumerate() {
+            hidden[i] = !keep_shared_node(&faces, &probed, pos);
+        }
+    }
+
+    let mut seen = std::collections::HashSet::new();
+    listed
+        .into_iter()
+        .enumerate()
+        .filter(|(i, n)| !hidden[*i] && seen.insert(n.path.clone()))
+        .map(|(_, n)| DiscoveredDevice {
+            path: n.path_text,
+            vendor_id: n.vendor_id,
+            product_id: n.product_id,
+            product: n.product,
+            manufacturer: n.manufacturer,
+            usage: n.usage,
         })
         .collect()
+}
+
+fn list_candidates(api: &HidApi) -> Vec<Listed> {
+    let vendors = crate::registry::vendor_ids();
+    api.device_list()
+        .filter_map(|d| {
+            let vendor_col =
+                is_royuan_collection(d.usage_page(), d.usage()) && vendors.contains(&d.vendor_id());
+            let keyboard = is_keyboard_collection_board(
+                d.vendor_id(),
+                d.product_id(),
+                d.usage_page(),
+                d.usage(),
+                d.interface_number(),
+                d.bus_type(),
+            );
+            if !vendor_col && !keyboard {
+                return None;
+            }
+            Some(Listed {
+                path: d.path().to_owned(),
+                path_text: d.path().to_string_lossy().into_owned(),
+                vendor_id: d.vendor_id(),
+                product_id: d.product_id(),
+                product: d.product_string().unwrap_or_default().to_string(),
+                manufacturer: d.manufacturer_string().unwrap_or_default().to_string(),
+                usage: d.usage(),
+                serial: d.serial_number().unwrap_or("").trim().to_string(),
+                keyboard,
+            })
+        })
+        .collect()
+}
+
+struct Listed {
+    path: std::ffi::CString,
+    path_text: String,
+    vendor_id: u16,
+    product_id: u16,
+    product: String,
+    manufacturer: String,
+    usage: u16,
+    serial: String,
+    keyboard: bool,
 }
 
 fn is_royuan_collection(usage_page: u16, usage: u16) -> bool {
@@ -66,7 +148,12 @@ fn is_royuan_collection(usage_page: u16, usage: u16) -> bool {
 /// Apple Aluminium Keyboard shares the id and will appear as a stranger.
 /// Karabiner uses the same id on a virtual bus; only USB devices qualify.
 /// The 3098B uses interface 0 at 3151:4002; interface 1 has keyboard and
-/// vendor input collections but no settings report.
+/// vendor input collections but no settings report. The Akko 5075B Plus
+/// at 3151:4003 (device id 598, named from the label) answered identify
+/// on that same interface 0 collection. Both USB ids are shared with
+/// boards that use the vendor collection, so the report descriptor
+/// chooses, and a vendor collection that has the report wins over
+/// interface 0.
 fn is_keyboard_collection_board(
     vendor_id: u16,
     product_id: u16,
@@ -77,8 +164,13 @@ fn is_keyboard_collection_board(
 ) -> bool {
     matches!(bus_type, BusType::Usb)
         && ((vendor_id, product_id, usage_page, usage) == (0x05AC, 0x024F, 0x01, 0x06)
-            || (vendor_id, product_id, usage_page, usage, interface)
-                == (0x3151, 0x4002, 0x01, 0x06, 0))
+            || (shared_settings_id(vendor_id, product_id)
+                && (usage_page, usage, interface) == (0x01, 0x06, 0)))
+}
+
+/// USB ids whose interfaces do not agree on where settings live.
+fn shared_settings_id(vendor_id: u16, product_id: u16) -> bool {
+    vendor_id == 0x3151 && matches!(product_id, 0x4002 | 0x4003)
 }
 
 /// Report ID 0 must carry 64 feature bytes. HID global Push/Pop preserves
@@ -127,6 +219,87 @@ fn has_settings_report(mut descriptor: &[u8]) -> bool {
         }
     }
     bits == (REPORT_LEN * 8) as u64 && stack.is_empty()
+}
+
+fn settings_report_on(dev: &HidDevice) -> Result<bool, HidError> {
+    let mut descriptor = [0u8; 4096];
+    let n = dev
+        .get_report_descriptor(&mut descriptor)
+        .map_err(api_err)?;
+    Ok(has_settings_report(&descriptor[..n]))
+}
+
+fn probe_settings(
+    api: &HidApi,
+    path: &std::ffi::CStr,
+    cache: &mut std::collections::HashMap<std::ffi::CString, Option<bool>>,
+) -> Option<bool> {
+    if let Some(known) = cache.get(path).copied() {
+        return known;
+    }
+    #[cfg(target_os = "macos")]
+    api.set_open_exclusive(false);
+    let found = api
+        .open_path(path)
+        .ok()
+        .and_then(|dev| settings_report_on(&dev).ok());
+    cache.insert(path.to_owned(), found);
+    found
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum SharedFace {
+    Vendor,
+    Keyboard,
+}
+
+/// `None` means the descriptor could not be read, so the node stays.
+/// A vendor node with a settings report hides the keyboard nodes of that
+/// board. An interface with no settings report is not offered.
+fn keep_shared_node(faces: &[SharedFace], reports: &[Option<bool>], index: usize) -> bool {
+    if reports[index] == Some(false) {
+        return false;
+    }
+    faces[index] != SharedFace::Keyboard
+        || !faces
+            .iter()
+            .zip(reports)
+            .any(|(face, report)| *face == SharedFace::Vendor && *report == Some(true))
+}
+
+/// One physical board. A Windows device-interface path shares its instance
+/// id across every interface of the composite device. Elsewhere the serial
+/// is used, then the USB id alone.
+fn board_group(vendor_id: u16, product_id: u16, serial: &str, path: &str) -> String {
+    if let Some(loc) = windows_location(path) {
+        return format!("{vendor_id:04x}:{product_id:04x}:loc:{loc}");
+    }
+    if !serial.is_empty() {
+        return format!("{vendor_id:04x}:{product_id:04x}:sn:{serial}");
+    }
+    format!("{vendor_id:04x}:{product_id:04x}")
+}
+
+/// `\\?\hid#vid_xxxx&pid_xxxx&mi_00#7&instance&0&0000#{guid}`.
+/// The last segment is the collection. What remains identifies the board.
+fn windows_location(path: &str) -> Option<String> {
+    let mut parts = path.split('#');
+    let prefix = parts.next()?.to_ascii_lowercase();
+    if !prefix.contains("hid") {
+        return None;
+    }
+    let _hardware = parts.next()?;
+    let instance = parts.next()?;
+    let segs: Vec<&str> = instance.split('&').filter(|s| !s.is_empty()).collect();
+    if segs.len() < 3 {
+        return None;
+    }
+    let end = if segs.len() >= 4 {
+        segs.len() - 1
+    } else {
+        segs.len()
+    };
+    Some(segs[..end].join("&").to_ascii_lowercase())
 }
 
 /// Minimum gap between feature-report writes. Faster stalls the endpoint
@@ -184,21 +357,15 @@ impl Transport {
         #[cfg(target_os = "macos")]
         api.set_open_exclusive(false);
         let dev = api.open_path(&cpath).map_err(api_err)?;
-        // This USB id is shared by boards with different interface layouts.
-        // Keep their vendor interfaces, but reject the 3098B's input-only one
-        // before sending any commands to it.
+        // Shared ids: refuse an interface with no 64-byte settings report
+        // before any command. Discovery drops these; this covers a direct open.
         if api.device_list().any(|d| {
-            d.path() == cpath.as_c_str() && (d.vendor_id(), d.product_id()) == (0x3151, 0x4002)
-        }) {
-            let mut descriptor = [0u8; 4096];
-            let n = dev
-                .get_report_descriptor(&mut descriptor)
-                .map_err(api_err)?;
-            if !has_settings_report(&descriptor[..n]) {
-                return Err(WireError::Transport(
-                    "interface has no 64-byte settings report".into(),
-                ));
-            }
+            d.path() == cpath.as_c_str() && shared_settings_id(d.vendor_id(), d.product_id())
+        }) && !settings_report_on(&dev)?
+        {
+            return Err(WireError::Transport(
+                "interface has no 64-byte settings report".into(),
+            ));
         }
         Ok(Self {
             dev,
@@ -460,7 +627,7 @@ mod tests {
             1,
             BusType::Usb
         ));
-        assert!(!is_keyboard_collection_board(
+        assert!(is_keyboard_collection_board(
             0x3151,
             0x4003,
             0x01,
@@ -468,6 +635,98 @@ mod tests {
             0,
             BusType::Usb
         ));
+        assert!(!is_keyboard_collection_board(
+            0x3151,
+            0x4003,
+            0x01,
+            0x06,
+            1,
+            BusType::Usb
+        ));
+        assert!(!is_keyboard_collection_board(
+            0x3151,
+            0x4003,
+            0x01,
+            0x06,
+            0,
+            BusType::Unknown
+        ));
+        assert!(!is_keyboard_collection_board(
+            0x3151,
+            0x4003,
+            0xffff,
+            0x01,
+            0,
+            BusType::Usb
+        ));
+    }
+
+    #[test]
+    fn shared_id_keeps_one_settings_interface() {
+        use SharedFace::{Keyboard, Vendor};
+        let keep = |faces: &[SharedFace], reports: &[Option<bool>]| {
+            (0..faces.len())
+                .filter(|&i| keep_shared_node(faces, reports, i))
+                .collect::<Vec<_>>()
+        };
+        // Interface 0 has the report, the vendor collection does not: 3098B
+        // and the 3151:4003 board that answered identify there.
+        assert_eq!(
+            keep(&[Keyboard, Vendor], &[Some(true), Some(false)]),
+            vec![0]
+        );
+        // Vendor collection has the report: ACR75 v2 and the other 4003 boards.
+        assert_eq!(
+            keep(&[Keyboard, Vendor], &[Some(false), Some(true)]),
+            vec![1]
+        );
+        // Both have it: one entry, and it is the vendor collection.
+        assert_eq!(
+            keep(&[Keyboard, Vendor], &[Some(true), Some(true)]),
+            vec![1]
+        );
+        assert_eq!(
+            keep(&[Vendor, Keyboard], &[Some(true), Some(true)]),
+            vec![0]
+        );
+        assert_eq!(
+            keep(&[Keyboard, Vendor], &[Some(false), Some(false)]),
+            Vec::<usize>::new()
+        );
+        // Unreadable vendor descriptor does not hide a keyboard that has the report.
+        assert_eq!(keep(&[Keyboard, Vendor], &[Some(true), None]), vec![0, 1]);
+        assert_eq!(keep(&[Keyboard], &[Some(true)]), vec![0]);
+        assert_eq!(
+            keep(
+                &[Vendor, Vendor, Keyboard],
+                &[Some(false), Some(true), Some(true)]
+            ),
+            vec![1]
+        );
+    }
+
+    #[test]
+    fn windows_interfaces_of_one_board_share_a_group() {
+        let kbd = r"\\?\hid#vid_3151&pid_4003&mi_00#7&2c2b8b7&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}";
+        let vendor = r"\\?\HID#VID_3151&PID_4003&MI_01&Col05#7&2c2b8b7&0&0004#{4d1e55b2-f16f-11cf-88cb-001111000030}";
+        let other = r"\\?\hid#vid_3151&pid_4003&mi_00#7&deadbeef&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}";
+        assert_eq!(
+            board_group(0x3151, 0x4003, "", kbd),
+            board_group(0x3151, 0x4003, "", vendor)
+        );
+        assert_ne!(
+            board_group(0x3151, 0x4003, "", kbd),
+            board_group(0x3151, 0x4003, "", other)
+        );
+        assert_eq!(windows_location("/dev/hidraw0"), None);
+        assert_ne!(
+            board_group(0x3151, 0x4003, "A", "/dev/hidraw0"),
+            board_group(0x3151, 0x4003, "B", "/dev/hidraw1")
+        );
+        assert_eq!(
+            board_group(0x3151, 0x4003, "", "/dev/hidraw0"),
+            board_group(0x3151, 0x4003, "", "/dev/hidraw1")
+        );
     }
 
     #[test]

@@ -8,7 +8,12 @@
 
 import init, * as core from "../../src-web/pkg/sharkfin_web";
 import { takePicked } from "./file-store";
-import { isSettingsCollection, requestFilters, USAGE_PAGE } from "./collections";
+import {
+  isSettingsCollection,
+  requestFilters,
+  selectSettingsDevices,
+  USAGE_PAGE,
+} from "./collections";
 
 export const BUILD: "app" | "browser" = "browser";
 
@@ -275,7 +280,7 @@ export async function grantedDevices(): Promise<HIDDevice[]> {
   if (!hidAvailable()) return [];
   const vendors = await knownVendors();
   const all = await navigator.hid.getDevices();
-  return all.filter((d) => isSettingsCollection(d, vendors));
+  return selectSettingsDevices(all.filter((d) => isSettingsCollection(d, vendors)));
 }
 
 /** Shows the browser's device picker. Must run from a user gesture. */
