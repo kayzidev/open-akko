@@ -43,7 +43,7 @@ Lors d'un push sur `main`, le workflow `.github/workflows/release.yml` :
 
 1. **Version** : Calcule la version depuis `package.json` + le numéro de run
 2. **Build** : Compile les binaires Windows et Linux signés
-3. **Génération du changelog** : Utilise git-cliff pour générer les notes automatiquement
+3. **Génération du changelog** depuis les commits qui suivent le dernier tag stable
 4. **Publication** : Crée une GitHub Release avec :
    - Les binaires signés (`.exe`, `.AppImage`)
    - Le fichier `latest.json` pour l'updater
@@ -178,4 +178,3 @@ cargo tauri signer generate
 
 - [Tauri Updater Plugin](https://v2.tauri.app/plugin/updater/)
 - [Conventional Commits](https://www.conventionalcommits.org/)
-- [git-cliff](https://git-cliff.org/)

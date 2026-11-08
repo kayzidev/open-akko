@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -57,6 +58,30 @@ class ReleaseTests(unittest.TestCase):
     def test_older_retried_release_does_not_replace_latest(self):
         self.assertEqual(release.latest_flag("0.12.9", ["v0.12.10", "v0.12.8"]), "--latest=false")
         self.assertEqual(release.latest_flag("0.12.11", ["v0.12.10", "v0.13.0-rc.1"]), "--latest")
+
+    def test_notes_include_only_new_commits_and_can_be_regenerated(self):
+        def git(*args):
+            subprocess.run(
+                ["git", "-c", "user.name=Release Test", "-c", "user.email=test@example.invalid",
+                 "-c", "commit.gpgsign=false", *args],
+                cwd=self.root, check=True, capture_output=True,
+            )
+
+        git("init", "--quiet")
+        git("add", ".github/release-notes.md")
+        git("commit", "-m", "fix: previous release")
+        git("tag", "v0.12.12")
+        git("commit", "--allow-empty", "-m", "fix: restore releases")
+        git("tag", "v0.12.16")
+
+        path = self.root / ".github/release-notes.md"
+        release.release_notes("0.12.16", self.root)
+        first = path.read_text(encoding="utf-8")
+        self.assertIn("## Changements de la version 0.12.16", first)
+        self.assertIn("- fix: restore releases", first)
+        self.assertNotIn("fix: previous release", first)
+        release.release_notes("0.12.16", self.root)
+        self.assertEqual(path.read_text(encoding="utf-8"), first)
 
     def test_builds_have_one_version_and_require_signed_bundles(self):
         release.prepare("0.12.4", "windows", self.root)
