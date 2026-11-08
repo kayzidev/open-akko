@@ -5,7 +5,7 @@
 // loop rather than through React state, so a 100-key picture at 60 fps
 // costs one style write per key and no renders.
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { BoardLayout } from "@/lib/layout-loader";
 import { FRAME_MS, colorAt, type EffectParam, type Family, type Led, type ReactiveHit } from "@/lib/effects";
 
@@ -37,7 +37,11 @@ export default function EffectPreview({
   const hits = useRef<ReactiveHit[]>([]);
   const frameRef = useRef(0);
   const forcePaint = useRef<() => void>(() => {});
-  const strike = (i: number) => {
+  const paramRef = useRef(param);
+  useEffect(() => {
+    paramRef.current = param;
+  }, [param]);
+  const strike = useCallback((i: number) => {
     if (!paramRef.current || typeof paramRef.current.mode !== "number") return;
     if (![5, 8, 14].includes(paramRef.current.mode)) return;
     const led = leds[i];
@@ -45,12 +49,10 @@ export default function EffectPreview({
     const now = frameRef.current;
     hits.current = [...hits.current.filter((h) => now - h.frame < 440), { ...led, frame: now }].slice(-32);
     forcePaint.current();
-  };
+  }, [leds]);
   useEffect(() => {
     hits.current = [];
   }, [param?.mode]);
-  const paramRef = useRef(param);
-  if (param) paramRef.current = param;
 
   useEffect(() => {
     if (!leds.length || !keys.length) return;
@@ -99,7 +101,7 @@ export default function EffectPreview({
       cancelAnimationFrame(handle);
       window.removeEventListener("keydown", onKey);
     };
-  }, [family, leds, keys]);
+  }, [family, leds, keys, strike]);
 
   // Lights only: a soft glow where each LED sits, on a dark ground. No
   // caps, so it reads as the effect and not as something to paint.

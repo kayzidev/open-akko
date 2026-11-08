@@ -24,6 +24,20 @@ def version(value):
     return value
 
 
+def latest_flag(release_version, published_tags):
+    candidate = tuple(map(int, version(release_version).split(".")))
+    for tag in published_tags:
+        if not tag.startswith("v"):
+            continue
+        try:
+            published = tuple(map(int, version(tag[1:]).split(".")))
+        except ValueError:
+            continue
+        if published >= candidate:
+            return "--latest=false"
+    return "--latest"
+
+
 def repository(value):
     if value != REPOSITORY:
         raise ValueError(f"Release repository must be {REPOSITORY}; configure the client before changing it")
@@ -166,7 +180,12 @@ def publish(release_version, repo, commit, root=ROOT):
         gh("release", "create", tag, "--target", commit, "--draft", "--title", f"Open Akko {release_version}", "--notes-file", ".github/release-notes.md")
     files = [str(p) for p in sorted((root / "artifacts/release").iterdir()) if p.is_file()]
     gh("release", "upload", tag, *files, "--clobber")
-    gh("release", "edit", tag, "--draft=false", "--latest")
+    published_tags = subprocess.run(
+        ["gh", "api", "--paginate", f"repos/{repo}/releases", "--jq",
+         ".[] | select(.draft == false and .prerelease == false) | .tag_name"],
+        cwd=root, capture_output=True, text=True, check=True,
+    ).stdout.splitlines()
+    gh("release", "edit", tag, "--draft=false", latest_flag(release_version, published_tags))
 
 
 def main():
