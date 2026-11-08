@@ -135,9 +135,12 @@ export interface DiscoveredUnknown {
 
 export type InputMonitoringStatus = "unknown" | "denied" | "granted";
 
+export type DeviceErrorKind = import("../lib/backend").DeviceErrorKind;
+
 export interface ScanResult {
   connected: ConnectedDevice | null;
   unknown: DiscoveredUnknown[];
+  deviceError: DeviceErrorKind;
   /** A keyboard is there but its node can't be opened; on Linux that is
    * almost always a missing udev rule. */
   openFailed: boolean;
@@ -293,9 +296,10 @@ export async function requestDevice(): Promise<boolean> {
 }
 
 export const scan = async (): Promise<ScanResult> => {
-  const empty = {
+  const empty: ScanResult = {
     connected: null,
     unknown: [],
+    deviceError: { kind: "none" },
     openFailed: false,
     inputMonitoring: null,
     stalled: false,
@@ -316,7 +320,7 @@ export const scan = async (): Promise<ScanResult> => {
     if (devices.length === 0) {
       core.clear_stall();
     } else {
-      return { ...empty, stalled: true };
+      return { ...empty, stalled: true, deviceError: { kind: "stalled" } };
     }
   }
 
@@ -330,8 +334,8 @@ export const scan = async (): Promise<ScanResult> => {
       let deviceId: number | null = null;
       try {
         const f = JSON.parse(String(e)) as { kind?: string; deviceId?: number };
-        if (f.kind === "stalled") return { ...empty, stalled: true };
-        if (f.kind === "keyboardOffline") return { ...empty, keyboardOffline: true };
+        if (f.kind === "stalled") return { ...empty, stalled: true, deviceError: { kind: "stalled" } };
+        if (f.kind === "keyboardOffline") return { ...empty, keyboardOffline: true, deviceError: { kind: "keyboardOffline" } };
         if (f.kind === "openFailed") {
           // Unopenable is not unknown: the board never got to speak.
           openFailed = true;
@@ -349,7 +353,7 @@ export const scan = async (): Promise<ScanResult> => {
       });
     }
   }
-  return { ...empty, unknown, openFailed };
+  return { ...empty, unknown, openFailed, deviceError: { kind: openFailed ? "accessDenied" : "none" } };
 };
 
 const withCore = async <T>(f: () => Promise<T>): Promise<T> => {

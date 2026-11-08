@@ -7,7 +7,7 @@ permissions:
   contents: read
 concurrency:
   group: publish-open-akko
-  cancel-in-progress: false
+  queue: max
 jobs:
   checks:
     if: github.ref == 'refs/heads/main'
@@ -105,12 +105,23 @@ jobs:
         with:
           python-version: '3.12'
       - name: Generate release notes
-        uses: orhun/git-cliff-action@7aa7f77d9e965a1e2b98f87b41af7fdd5bea828f # v4
+        id: changelog
+        continue-on-error: true
+        uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
         with:
           config: cliff.toml
-          args: --latest --strip all
+          args: --unreleased --use-branch-tags --tag ${{ needs.version.outputs.tag }} --strip all
         env:
-          OUTPUT: .github/release-notes.md
+          OUTPUT: ${{ runner.temp }}/open-akko-changelog.md
+      - name: Append changes to release notes
+        if: steps.changelog.outcome == 'success'
+        env:
+          CHANGELOG: ${{ runner.temp }}/open-akko-changelog.md
+        run: |
+          if [ -s "$CHANGELOG" ]; then
+            printf '\n' >> .github/release-notes.md
+            cat "$CHANGELOG" >> .github/release-notes.md
+          fi
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
         with:

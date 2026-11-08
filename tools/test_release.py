@@ -54,6 +54,10 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaises(ValueError): release.numbered_version(0, self.root)
         with self.assertRaises(ValueError): release.version("0.12.1+build2")
 
+    def test_older_retried_release_does_not_replace_latest(self):
+        self.assertEqual(release.latest_flag("0.12.9", ["v0.12.10", "v0.12.8"]), "--latest=false")
+        self.assertEqual(release.latest_flag("0.12.11", ["v0.12.10", "v0.13.0-rc.1"]), "--latest")
+
     def test_builds_have_one_version_and_require_signed_bundles(self):
         release.prepare("0.12.4", "windows", self.root)
         self.assertEqual(release.validate(self.root), "0.12.4")
