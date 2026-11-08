@@ -36,7 +36,7 @@ try {
   New-Item -ItemType Directory -Force -Path $Portable | Out-Null
   Copy-Item -LiteralPath (Join-Path $Release 'sharkfin.exe') -Destination (Join-Path $Portable 'Open Akko.exe') -Force
   foreach ($File in @('LICENSE', 'THIRD-PARTY-NOTICES.md')) {
-    Copy-Item -LiteralPath (Join-Path $Root $File) -Destination $Portable -Force
+    Copy-Item -LiteralPath (Join-Path $App "dist/$File") -Destination $Portable -Force
   }
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'PORTABLE.md') -Destination (Join-Path $Portable 'README.md') -Force
   Compress-Archive -Path (Join-Path $Portable '*') -DestinationPath (Join-Path $Artifacts 'Open-Akko-windows-x64-portable.zip') -Force

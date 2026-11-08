@@ -31,6 +31,8 @@ class ReleaseTests(unittest.TestCase):
             inputs.extend(bundle.get("files", {}).values())
         for source in inputs:
             original = (release.ROOT / "app/src-tauri" / source).resolve()
+            if original == release.ROOT / "app/dist/THIRD-PARTY-NOTICES.md":
+                continue
             destination = (self.root / "app/src-tauri" / source).resolve()
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(original, destination)

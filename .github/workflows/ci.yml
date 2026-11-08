@@ -44,7 +44,7 @@ jobs:
           cargo fmt --check
           cargo clippy --locked --all-targets -- -D warnings
           cargo test --locked --lib
-      - name: Check browser build types
+      - name: Check browser build
         if: runner.os == 'Linux'
         working-directory: app
         run: |
@@ -52,14 +52,10 @@ jobs:
           cargo install wasm-pack --version 0.15.1 --locked
           wasm-pack build src-web --target web --dev --no-opt -- --locked
           npx tsc -p tsconfig.web.json --noEmit
-      - name: Layouts and notices
+          npx vite build --config vite.web.config.ts
+      - name: Check layouts
         if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          python3 tools/lint_layouts.py
-          cd app
-          npx vite build --sourcemap
-          python3 ../tools/notices.py --check
+        run: python3 tools/lint_layouts.py
       - name: Install Rust audit tool
         if: runner.os == 'Linux'
         run: cargo install cargo-audit --version 0.22.2 --locked

@@ -44,8 +44,7 @@
     "licenseFile": "../../LICENSE",
     "shortDescription": "Configuration des claviers AKKO",
     "resources": {
-      "../../LICENSE": "LICENSE",
-      "../../THIRD-PARTY-NOTICES.md": "THIRD-PARTY-NOTICES.md"
+      "../../LICENSE": "LICENSE"
     },
     "macOS": {
       "minimumSystemVersion": "10.15",
@@ -62,7 +61,7 @@
         "files": {
           "/usr/lib/udev/rules.d/70-open-akko.rules": "../../packaging/70-open-akko.rules",
           "/usr/share/doc/open-akko/copyright": "../../LICENSE",
-          "/usr/share/doc/open-akko/THIRD-PARTY-NOTICES.md": "../../THIRD-PARTY-NOTICES.md",
+          "/usr/share/doc/open-akko/THIRD-PARTY-NOTICES.md": "../dist/THIRD-PARTY-NOTICES.md",
           "/usr/share/metainfo/com.kayzidev.open-akko.metainfo.xml": "../../packaging/com.kayzidev.open-akko.metainfo.xml",
           "/usr/share/metainfo/com.kayzidev.open-akko.appdata.xml": "../../packaging/com.kayzidev.open-akko.metainfo.xml"
         }
@@ -71,7 +70,7 @@
         "files": {
           "/usr/lib/udev/rules.d/70-open-akko.rules": "../../packaging/70-open-akko.rules",
           "/usr/share/doc/open-akko/copyright": "../../LICENSE",
-          "/usr/share/doc/open-akko/THIRD-PARTY-NOTICES.md": "../../THIRD-PARTY-NOTICES.md",
+          "/usr/share/doc/open-akko/THIRD-PARTY-NOTICES.md": "../dist/THIRD-PARTY-NOTICES.md",
           "/usr/share/metainfo/com.kayzidev.open-akko.metainfo.xml": "../../packaging/com.kayzidev.open-akko.metainfo.xml",
           "/usr/share/metainfo/com.kayzidev.open-akko.appdata.xml": "../../packaging/com.kayzidev.open-akko.metainfo.xml"
         }

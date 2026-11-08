@@ -308,18 +308,11 @@ that shares the layout, since the bake reaches all of them.
 
 ### Third-party notices
 
-`THIRD-PARTY-NOTICES.md` lists every component redistributed inside the
-binaries, and ships with them. Regenerate it after adding, removing or
-upgrading a dependency:
-
-```sh
-cd app && npx vite build --sourcemap
-python3 tools/notices.py
-```
-
-The web package list comes from the sourcemaps of that build, so build-only
-tools are never listed and nothing that ships is missed. CI runs
-`tools/notices.py --check` and fails if the list has drifted.
+Desktop and browser builds require Python 3. They generate
+`THIRD-PARTY-NOTICES.md` alongside the compiled assets in `app/dist` or
+`app/dist-web`. The inventory uses the modules and fonts in the bundle and
+the locked dependencies for its binary. The copy in the repository covers
+vendored source. CI builds both versions and fails if generation fails.
 
 ### Releasing
 
