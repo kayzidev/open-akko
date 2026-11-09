@@ -1,11 +1,16 @@
 <div align="center">
-  <img src="docs/logo.svg" width="128" height="128" alt="Open Akko Logo">
-  
-  # Open Akko
-  
-  **Configuration complète des claviers AKKO sous Windows et Linux**
-  
-  [📥 Télécharger](https://github.com/kayzidev/open-akko/releases/latest) · [🐛 Signaler un bug](https://github.com/kayzidev/open-akko/issues/new/choose) · [📋 Claviers supportés](docs/BOARDS.md)
+  <img src="./app/public/icons/open-akko-512.png" width="128" height="128" alt="Logo Open Akko">
+
+# Open Akko
+
+**Configuration complète des claviers AKKO sous Windows et Linux**
+
+[![Intégration continue](https://github.com/kayzidev/open-akko/actions/workflows/ci.yml/badge.svg?event=pull_request)](https://github.com/kayzidev/open-akko/actions/workflows/ci.yml) [![Statut des publications](https://github.com/kayzidev/open-akko/actions/workflows/release.yml/badge.svg?branch=main&event=push)](https://github.com/kayzidev/open-akko/actions/workflows/release.yml) [![Licence GPL-3.0-or-later](https://img.shields.io/badge/Licence-GPL--3.0--or--later-blue)](./LICENSE)
+
+[📥 Télécharger](https://github.com/kayzidev/open-akko/releases/latest) · [🐛 Signaler un bug](https://github.com/kayzidev/open-akko/issues/new/choose) · [📋 Claviers supportés](docs/BOARDS.md)
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T4V727SHOC)
+
 </div>
 
 ---
