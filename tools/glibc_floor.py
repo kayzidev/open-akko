@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: JR Lanteigne <root@dnim.dev>
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Fail if an ELF needs a glibc newer than 2.35.
+"""Fail if an ELF needs a glibc newer than 2.43.
 
 Usage: tools/glibc_floor.py PATH...
 
 Directories are walked. Non-ELF files are skipped. The Linux release is
-built on Ubuntu 22.04; this fails the job if a newer image stamps a
+built on Ubuntu 26.04; this fails the job if a newer image stamps a
 symbol version those systems will not load.
 """
 
@@ -14,7 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-FLOOR = (2, 35)
+FLOOR = (2, 43)
 
 
 def glibc_versions(text: str) -> set[tuple[int, ...]]:
@@ -87,7 +87,7 @@ def main() -> int:
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
-    print(f"{seen} ELF files need nothing newer than glibc 2.35")
+    print(f"{seen} ELF files need nothing newer than glibc 2.43")
     return 0
 
 

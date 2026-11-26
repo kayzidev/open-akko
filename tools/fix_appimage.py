@@ -11,8 +11,9 @@ import fnmatch
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Host Mesa/EGL must use the host display stack. Ubuntu 22.04 copies abort
-# WebKit on Fedora 44 with EGL_BAD_PARAMETER (tauri-apps/tauri#15976).
+# Host Mesa/EGL must use the host display stack. Copies from the build
+# image abort WebKit on Fedora 44 with EGL_BAD_PARAMETER
+# (tauri-apps/tauri#15976).
 HOST_DISPLAY_LIBRARIES = (
     "libwayland-client.so*", "libwayland-cursor.so*",
     "libwayland-egl.so*", "libwayland-server.so*", "libxkbcommon.so*",
