@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
   version:
     needs: checks
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
@@ -35,7 +35,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-26.04
             platform: linux
             bundle: appimage
           - os: windows-latest
@@ -94,7 +94,7 @@ jobs:
           if-no-files-found: error
   publish:
     needs: [version, build]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:
